@@ -9,4 +9,10 @@ struct Producto
     float impAplicado;
 };
 
+struct Usuario
+{
+    char *usuario;
+    char *clave;
+};
+
 #endif

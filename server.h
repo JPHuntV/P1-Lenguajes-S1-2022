@@ -60,6 +60,18 @@ int getAllEmpleados(){
     
     return (int)mysql_num_rows(res);
 }
+
+int getUsuario(struct Usuario *pUsuario){
+    char query[2000];
+    sprintf(query, "call getUserByUsuario('%s','%s')",pUsuario->usuario,pUsuario->clave);
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n", mysql_error(conn));
+    }
+    res = mysql_store_result(conn);
+    
+    return (int)mysql_num_rows(res);
+}
 /////////////////////
 void freeMysql(){
     do

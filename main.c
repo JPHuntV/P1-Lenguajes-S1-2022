@@ -13,8 +13,10 @@
 
 void menuPrincipal();
 
+bool solicitarUsuario();
 void menuOperativo();
 void menuAdministrativo();
+
 
 void leerArchivo();
 void transformarArchivo(FILE *archivo);
@@ -47,7 +49,13 @@ void menuPrincipal(){
         switch (opcion)
         {
         case '1':
-            menuOperativo();
+            if(solicitarUsuario()){
+                printf("correcto");
+                menuOperativo();
+            }else{
+                printf("\n-----El usuario o contraseña ingresados son incorrectos.-----\n");
+                pausa();
+            }
             break;
         
         case '2':
@@ -67,6 +75,29 @@ void menuPrincipal(){
     return;
 }
 
+bool solicitarUsuario(){
+    
+    
+
+    char pUsuario[200];
+    printf("Por favor ingrese su nombre de usuario y contraseña\n\nUsuario:\t");
+    scanf("%s",pUsuario);
+    while((getchar()!='\n'));
+
+    char pClave[200];
+    printf("\nContraseña:\t");
+    scanf("%s",pClave);
+    while((getchar()!='\n'));
+
+    struct Usuario usuario = {pUsuario,pClave};
+    getUsuario(&usuario);
+    row = mysql_fetch_row(res);
+    /*if(row==NULL){
+        printf("\n-----El usuario o contraseña ingresados son incorrectos.-----\n");
+    }*/
+    freeMysql();
+    return row!= NULL;
+}
 void  menuOperativo(){
     system("clear");
     char opcion;
