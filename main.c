@@ -18,6 +18,8 @@ void menuAdministrativo();
 
 void leerArchivo();
 void transformarArchivo(FILE *archivo);
+void listarAreas();
+void listarEmpleados();
 bool esNumero(char *token);
 void pausa();
 void salir();
@@ -90,10 +92,12 @@ void  menuOperativo(){
         
         case '2':
             printf("listar areas");
+            listarAreas();
             break;
         
         case '3':
             printf("listar empleados");
+            listarEmpleados();
             break;
 
         case '4':
@@ -249,6 +253,38 @@ void transformarArchivo(FILE *archivo){
 
     return;
 
+}
+
+void listarAreas(){
+    system("clear");
+    getAllAreas();
+
+    printf("\n\tId Area\t\tNombre\t\tDimensión\t\tProducto principal producido\n");
+    int i=0;
+    while ((row = mysql_fetch_row(res)) != NULL)
+    {
+        printf("%d.\t%s\t\t%s\t\t%s\t\t\t%s\t\n",i,row[0], row[1],row[2], row[3]);
+        i++;
+    }
+    freeMysql();
+    pausa();
+    return;
+}
+
+void listarEmpleados(){
+    system("clear");
+    getAllEmpleados();
+
+    printf("\n\tCedula\t\tNombre completo\t\tLabor\t\tSalario mensual\t\tSalario cargas sociales\n");
+    int i=0;
+    while ((row = mysql_fetch_row(res)) != NULL)
+    {
+        printf("%d.\t%s\t%s\t\t\t%s\t\t%s\t\t\t%s\t\n",i,row[0], row[1],row[2], row[3],row[4]);
+        i++;
+    }
+    freeMysql();
+    pausa();
+    return;
 }
 /*******************************************************************/
 

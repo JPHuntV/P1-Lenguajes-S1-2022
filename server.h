@@ -37,6 +37,29 @@ void insertProducto(struct Producto *pProducto){
     }
     return;
 }
+
+int getAllAreas(){
+    char *query = "call getAllAreas()";
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n", mysql_error(conn));
+    }
+    res = mysql_store_result(conn);
+    
+    
+    return (int)mysql_num_rows(res);
+}
+int getAllEmpleados(){
+    char *query = "call getAllEmpleados()";
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n", mysql_error(conn));
+    }
+    res = mysql_store_result(conn);
+    
+    
+    return (int)mysql_num_rows(res);
+}
 /////////////////////
 void freeMysql(){
     do
