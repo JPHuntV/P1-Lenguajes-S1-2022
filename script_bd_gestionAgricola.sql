@@ -1,5 +1,6 @@
 create database gestionAgricola;
 use gestionAgricola;
+
 create table Productos
 (
 	idProducto varchar(10) primary key,
@@ -25,6 +26,23 @@ create table Empleados
     labor varchar(30) not null,
     salarioMensual float not null,
     salarioCargasSociales float not null
+);
+
+create table Usuarios
+(
+	idUsuario int auto_increment primary key,
+    usuario varchar(30) unique not null,
+    clave varchar(30) not null
+);
+
+create table ValoresIniciales
+(
+	cedulaJuridica int primary key,
+    nombreComercio varchar(30) not null,
+    telefono int not null,
+    numeroSecSigFact int not null,
+    porcentajeCargaSocial float not null
+    
 );
 
 DROP procedure IF EXISTS `insertProducto`;
@@ -76,6 +94,18 @@ END$$
 
 DELIMITER ;
 
+DROP procedure IF EXISTS `getUserByUsuario`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `getUserByUsuario` (in pUsuario varchar(30), in pClave varchar(30))
+BEGIN
+		select * from Usuarios
+        where usuario = pUsuario and clave = pClave;
+END$$
+
+DELIMITER ;
+
 DROP procedure IF EXISTS `getAllEmpleados`;
 
 DELIMITER $$
@@ -86,7 +116,15 @@ BEGIN
 END$$
 
 DELIMITER ;
-/*
+/************DDL
+insert into Usuarios(usuario, clave)
+values('Usuarioej1', 'contraseñaEj1'),
+	('usuarioEj2','contraseñaEj2')
+
+
+insert into ValoresIniciales(cedulaJuridica, nombreComercio, telefono, numeroSecSigFact, porcentajeCargaSocial)
+values(356485698, 'Comercio de ejemplo 01', 85645587, 0,1.5);
+
 call insertArea('Area1', 153.000, 'productoA1');
 call insertArea('Area2', 15.000, 'productoA2');
 call insertArea('Area3', 26.40, 'productoA3');
