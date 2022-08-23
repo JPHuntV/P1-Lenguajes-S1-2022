@@ -15,4 +15,12 @@ struct Usuario
     char *clave;
 };
 
+struct ValoresIniciales
+{
+    int cedulaJuridica;
+	char *nombreComercio;
+	int telefono;
+	int numeroSecSigFact;
+	float porcentajeCargaSocial;
+};
 #endif

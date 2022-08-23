@@ -72,6 +72,18 @@ int getUsuario(struct Usuario *pUsuario){
     
     return (int)mysql_num_rows(res);
 }
+
+int getValoresIniciales(){
+    
+    char *query = "call getValoresIniciales()";
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n", mysql_error(conn));
+    }
+    res = mysql_store_result(conn);
+    
+    return (int)mysql_num_rows(res);
+}
 /////////////////////
 void freeMysql(){
     do

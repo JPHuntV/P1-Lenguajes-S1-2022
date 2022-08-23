@@ -115,6 +115,17 @@ BEGIN
 		select * from Empleados;
 END$$
 
+
+DROP procedure IF EXISTS `getValoresIniciales`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `getValoresIniciales` ()
+BEGIN
+		select * from ValoresIniciales;
+END$$
+
+
 DELIMITER ;
 /************DDL
 insert into Usuarios(usuario, clave)

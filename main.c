@@ -22,6 +22,7 @@ void leerArchivo();
 void transformarArchivo(FILE *archivo);
 void listarAreas();
 void listarEmpleados();
+struct ValoresIniciales cargarValoresIniciales();
 bool esNumero(char *token);
 void pausa();
 void salir();
@@ -77,8 +78,6 @@ void menuPrincipal(){
 
 bool solicitarUsuario(){
     
-    
-
     char pUsuario[200];
     printf("Por favor ingrese su nombre de usuario y contraseña\n\nUsuario:\t");
     scanf("%s",pUsuario);
@@ -153,46 +152,45 @@ void  menuAdministrativo(){
     system("clear");
     char opcion;
     char repetir = 1;
+    struct ValoresIniciales pValoresIniciales = cargarValoresIniciales();
+    printf("\n-----Valores iniciales-----\n");
+    printf("Cedula jurídica: %d\nNombre: %s\nTeléfono: %d\nNumero de la siguiente factura: %d\n\n\n",pValoresIniciales.cedulaJuridica, pValoresIniciales.nombreComercio, 
+                        pValoresIniciales.telefono, pValoresIniciales.numeroSecSigFact);
     do{
         
         printf("\n#####  Menú administrativo  #####\n\n");
-        printf("1.Valores iniciales \n");
-        printf("2.Registro de nomina \n");
-        printf("3.Registro ventas. \n");
-        printf("4.Consulta de nomina.\n");
-        printf("5.Consulta de ventas.\n");
-        printf("6.Volver al menú principal.\n");
-        printf("7.Salir.\n");
+        printf("1.Registro de nomina \n");
+        printf("2.Registro ventas. \n");
+        printf("3.Consulta de nomina.\n");
+        printf("4.Consulta de ventas.\n");
+        printf("5.Volver al menú principal.\n");
+        printf("6.Salir.\n");
         printf("#############################\n");
-        printf("Seleccione una opcion del 1 al 7:\t");
+        printf("Seleccione una opcion del 1 al 6:\t");
 
         scanf(" %c", &opcion);
         switch (opcion)
         {
         case '1':
-            printf("Valores iniciales");
-            break;
-        
-        case '2':
             printf("registro de nomina");
             break;
         
-        case '3':
+        case '2':
             printf("registro de ventas");
             break;
 
-        case '4':
+        case '3':
             printf("Consulta de nominas");
             break;
 
-        case '5':
+        case '4':
             printf("Consulta de ventas");
             break;
 
-        case '6':
+        case '5':
             repetir = 0;
             break;
-        case '7':
+        case '6':
             printf("saliendo......\n");
             salir();
         default:
@@ -205,7 +203,14 @@ void  menuAdministrativo(){
     return;
 }
 
-
+struct ValoresIniciales cargarValoresIniciales(){
+    printf("\nentre a cargarlos\n");
+    getValoresIniciales();
+    row = mysql_fetch_row(res);
+    freeMysql();
+    struct ValoresIniciales pValoresIniciales = {atoi(row[0]),row[1],atoi(row[2]),atoi(row[3]),atof(row[4])};
+    return pValoresIniciales;
+}
 //////////////////////////////////
 
 
