@@ -172,6 +172,17 @@ END$$
 
 
 DELIMITER ;
+
+DROP procedure IF EXISTS `getAllNominas`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `getAllNominas` ()
+BEGIN
+		select * from Nominas;
+END$$
+
+DELIMITER ;
 /************DDL
 insert into Usuarios(usuario, clave)
 values('Usuarioej1', 'contraseñaEj1'),
