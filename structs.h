@@ -32,13 +32,14 @@ struct Empleado
 	char *apellido2;
 	char *labor;
 	float salarioMensual;
-	float salarioCargasSociales;
 };
 struct Nomina
 {
     int mes;
     int anio;
-    struct Empleado empleados[15];
+    struct Empleado *empleados;
+    float subtotal;
+    float total;
 };
 
 #endif

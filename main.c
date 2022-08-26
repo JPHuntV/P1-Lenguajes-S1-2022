@@ -26,6 +26,7 @@ void listarAreas();
 struct Empleado* listarEmpleados();
 struct ValoresIniciales cargarValoresIniciales();
 void generarNomina();
+struct Empleado* agregarEmpleados(int *pCantidadNomina);
 bool enNomina(int cedula, struct Empleado *nomina, int j);
 int getNum(char* mesanio);
 bool esNumero(char *token);
@@ -42,6 +43,7 @@ int main(){
 void menuPrincipal(){
     char opcion;
     char repetir = 1;
+    valoresIniciales = cargarValoresIniciales();
     //printf("Cantidad de empleados: %d", CANT_EMP);
     do{
         
@@ -158,7 +160,7 @@ void  menuAdministrativo(){
     system("clear");
     char opcion;
     char repetir = 1;
-    valoresIniciales = cargarValoresIniciales();
+    
     printf("\n-----Valores iniciales-----\n");
     printf("Cedula jurídica: %d\nNombre: %s\nTeléfono: %d\nNumero de la siguiente factura: %d\n\n\n",valoresIniciales.cedulaJuridica, valoresIniciales.nombreComercio, 
                         valoresIniciales.telefono, valoresIniciales.numeroSecSigFact);
@@ -212,7 +214,6 @@ void  menuAdministrativo(){
 }
 
 struct ValoresIniciales cargarValoresIniciales(){
-    printf("\nentre a cargarlos\n");
     getValoresIniciales();
     row = mysql_fetch_row(res);
     freeMysql();
@@ -263,7 +264,7 @@ void transformarArchivo(FILE *archivo){
         i++;
     }
     j = i;
-    printf("\nSe incluiran las siguientes aulas\n");
+    printf("\nSe incluiran los siguientes productos\n");
     struct Producto Productos[i];
     for(i = 0; i<j; ++i){
         char *str = lineas[i];
@@ -315,8 +316,8 @@ void listarAreas(){
 struct Empleado* listarEmpleados(){
     system("clear");
     getAllEmpleados();
-    printf("\ncantidad de empleados: %d\tporcentaje:%f\n\n", (int)mysql_num_rows(res),valoresIniciales.porcentajeCargaSocial);
     cantEmpleados = (int)mysql_num_rows(res);
+    printf("##### Empleados #####");
     printf("\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
     int i=0;
     struct Empleado *lEmpleados =malloc(sizeof(struct Empleado)*(int)mysql_num_rows(res));
@@ -328,10 +329,10 @@ struct Empleado* listarEmpleados(){
         lEmpleados[i].apellido2 = row[3];
         lEmpleados[i].labor= row[4];
         lEmpleados[i].salarioMensual = atof(row[5]);
-        lEmpleados[i].salarioCargasSociales = atof(row[5])*valoresIniciales.porcentajeCargaSocial;
         printf("%d.\t%s \t%s %s %s \t%s \t%s  \t\t%f \n",i,row[0], row[1],row[2], row[3],row[4],row[5],atof(row[5])*valoresIniciales.porcentajeCargaSocial);
         i++;
     }
+    printf("\n#########################################################\n");
     freeMysql();
     
     return lEmpleados;
@@ -339,46 +340,105 @@ struct Empleado* listarEmpleados(){
 
 
 void generarNomina(){
-    struct Nomina nomina;
+    struct Nomina nomina ;
     printf("\nIngrese el mes:\t");
-    nomina.mes = getNum("mes");
+    /////nomina.mes = getNum("mes");
+    nomina.mes = 2;
     while(nomina.mes>12 || nomina.mes<1){
-        printf("\n\nIngrese un mes valido (entre 1 y 12):\t");
-        nomina.mes = getNum("mes");
+       ////// printf("\n\nIngrese un mes valido (entre 1 y 12):\t");
+        //////nomina.mes = getNum("mes");
+        
     }
     printf("\nIngrese el año:\t");
-    nomina.anio = getNum("año");
+    /////nomina.anio = getNum("año");
+    nomina.anio = 2022;
     while(nomina.anio>2100 || nomina.anio<2021){
-        printf("\n\nIngrese un año valido (entre 2021 y 2100):\t");
-        nomina.anio = getNum("año");
+        //////////printf("\n\nIngrese un año valido (entre 2021 y 2100):\t");
+       ///////// nomina.anio = getNum("año");
+       
     }
-    printf("\nAño y mes ingresados: %d\t%d",nomina.anio, nomina.mes);
 
+    int cantidadNomina = 0;
+    nomina.empleados = agregarEmpleados(&cantidadNomina);
+   // printf("\n\n%d", nomina.empleados[0].cedula);
+
+    
+    //printf("\n%s",nomina.empleados[1].nombre);
+    printf("cantidad en nomina: %d", cantidadNomina);
+
+
+    //imprimir detalle nomina
+
+    system("clear");
+    printf("\n##### Detalle de la nomina #####");
+    printf("\nAño: \t%d\nMes: \t%d", nomina.anio, nomina.mes);
+
+    float subtotal = 0;
+    float total = 0;
+    printf("\n\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
+    int i=0;
+    while (i < cantidadNomina){
+        printf("%d.\t%d \t%s %s %s \t%s \t%f  \t\t%f \n",i,
+        nomina.empleados[i].cedula,nomina.empleados[i].nombre,nomina.empleados[i].apellido1, nomina.empleados[i].apellido2,
+        nomina.empleados[i].labor,nomina.empleados[i].salarioMensual, nomina.empleados[i].salarioMensual * valoresIniciales.porcentajeCargaSocial);
+        subtotal += nomina.empleados[i].salarioMensual;
+        total += nomina.empleados[i].salarioMensual * valoresIniciales.porcentajeCargaSocial;
+        ++i;
+    }
+    nomina.subtotal = subtotal;
+    nomina.total = total;
+    printf("\n\nSubtotal: \t%f\nTotal: \t\t%f", subtotal, total);
+
+
+    
+    getchar();
+    char opcion;
+    printf("\n\n¿Desea guardar esta nomina ? (y/n): ");
+    scanf(" %c", &opcion);
+
+    if(opcion == 'y' || opcion == 'Y'){
+        int idNomina;
+        insertNomina(&nomina, &idNomina);
+        
+        int i = 0;
+        while(i<cantidadNomina){
+            freeMysql();
+            insertEmpleadoXNomina(nomina.empleados[i].cedula,idNomina, cantidadNomina );
+            freeMysql();
+            i++;
+        }
+    }
+
+    getchar();
+    freeMysql();
+    pausa();
+    return;
+
+}
+
+struct Empleado* agregarEmpleados(int *pCantidadNomina){
     struct Empleado *lEmpleados = listarEmpleados();
     struct Empleado *empleadosNomina = NULL;
-
-
     int num = -1;
     int j = 0;
-    printf("cantidad: %d", cantEmpleados);
-
-    printf("selecione un empleado: ");
+    //printf("cantidad: %d", cantEmpleados);
+    printf("\nIngrese el id del empleado u otro caracter para terminar la selección\nOpción: ");
     while (scanf("%d", &num)==1)
     {
-        
         if(num < cantEmpleados){
             if(!enNomina(lEmpleados[num].cedula,empleadosNomina,j) ){
             
                 empleadosNomina = realloc(empleadosNomina, sizeof(struct Empleado)*++j);
                 
                 empleadosNomina[j-1] = lEmpleados[num];
-                printf ("\n\nempleados en nomina: ");
+                printf ("\n\n##### Empleados en nomina #####");
                 int i = 0;
                 printf("\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
                 while(i<j){
-                    printf("%d.\t%d \t%s %s %s \t%s \t%f  \t\t \n",i,
+                    printf("%d.\t%d \t%s %s %s \t%s \t%f  \t\t %f\n",i,
                     empleadosNomina[i].cedula,empleadosNomina[i].nombre,empleadosNomina[i].apellido1, empleadosNomina[i].apellido2,
-                    empleadosNomina[i].labor,empleadosNomina[i].salarioMensual);
+                    empleadosNomina[i].labor,empleadosNomina[i].salarioMensual, 
+                    empleadosNomina[i].salarioMensual * valoresIniciales.porcentajeCargaSocial);
                     ++i;
                 }
             }else{
@@ -388,15 +448,13 @@ void generarNomina(){
         }else{
             printf("\nEste empleado no existe\n\n");
         }
-        printf("\nselecione un empleado: ");
+        printf("\nIngrese el id del empleado u otro caracter para terminar la selección\nOpción: ");
         
     } 
     
-    
-    //guardar nomina y no repetir empleados
-    
-    
-    return;
+    *pCantidadNomina = j;
+    //guardar nomina en base de datos
+    return empleadosNomina;
 }
 
 bool enNomina(int cedula, struct Empleado *nomina, int j){

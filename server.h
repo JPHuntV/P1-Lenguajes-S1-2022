@@ -11,6 +11,7 @@ char *user = "root";
 char *password = "JpHv0410";
 char *database = "gestionAgricola";
 
+void freeMysql();
 
 
 int conectarServidor(){
@@ -33,6 +34,34 @@ void insertProducto(struct Producto *pProducto){
         fprintf(stderr, "%s\n\n", mysql_error(conn));
     }else{
         printf("\nEl producto se ha insertado correctamente!\n");
+        res = mysql_use_result(conn);
+    }
+    return;
+}
+
+
+void insertNomina(struct Nomina *pNomina, int *pIdNomina){
+    char query[2000];
+    sprintf(query, "call insertNomina('%d','%d', %f,%f)",pNomina->mes, pNomina->anio, pNomina->subtotal, pNomina->total);
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n\n", mysql_error(conn));
+    }else{
+        printf("\nLa nomina se ha insertado correctamente!\n");
+        res = mysql_store_result(conn);
+        *pIdNomina = atoi(mysql_fetch_row(res)[0]);
+    }
+    return;
+}
+
+void insertEmpleadoXNomina(int cedula, int pIdNomina, int pCantidadNomina){
+    char query[2000];    
+    sprintf(query, "call insertEmpleadoXNomina('%d','%d')", cedula, pIdNomina);
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n\n", mysql_error(conn));
+    }else{
+        printf("\nEl empleado se ha insertado correctamente!\n");
         res = mysql_use_result(conn);
     }
     return;
