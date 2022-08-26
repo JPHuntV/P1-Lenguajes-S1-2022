@@ -24,8 +24,7 @@ create table Empleados
     apellido1 varchar(25) not null,
     apellido2 varchar(25) not null,
     labor varchar(30) not null,
-    salarioMensual float not null,
-    salarioCargasSociales float not null
+    salarioMensual float not null
 );
 
 create table Usuarios
@@ -44,6 +43,26 @@ create table ValoresIniciales
     porcentajeCargaSocial float not null
     
 );
+
+create table Nominas
+(
+	idNomina int primary key auto_increment,
+    mes tinyint not null,
+    anio smallint not null,
+    subtotal float not null,
+    total float not null
+);
+
+
+create table EmpleadoXNomina
+(
+	idEmpleadoXNomina int primary key auto_increment,
+    cedulaEmpleado int,
+    idNomina int,
+    foreign key (cedulaEmpleado) references Empleados(cedula),
+    foreign key (idNomina) references Nominas(idNomina)
+);
+
 
 DROP procedure IF EXISTS `insertProducto`;
 
@@ -74,14 +93,40 @@ DROP procedure IF EXISTS `insertEmpleado`;
 DELIMITER $$
 USE `gestionAgricola`$$
 CREATE PROCEDURE `insertEmpleado` (in pCedula int, in pNombre varchar(25), in pApellido1 varchar(25), in pApellido2 varchar(25),
-									in pLabor varchar(25), in pSalarioMensual float, in pSalCargasSoc float)
+									in pLabor varchar(25), in pSalarioMensual float)
 BEGIN
-	insert into Empleados (cedula, nombre, apellido1, apellido2, labor, salarioMensual, salarioCargasSociales)
-		values(pCedula, pNombre, pApellido1, pApellido2, pLabor, pSalarioMensual, pSalCargasSoc);
+	insert into Empleados (cedula, nombre, apellido1, apellido2, labor, salarioMensual)
+		values(pCedula, pNombre, pApellido1, pApellido2, pLabor, pSalarioMensual);
 END$$
 
 DELIMITER ;
 
+DROP procedure IF EXISTS `insertNomina`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `insertNomina` (in pMes tinyint, in pAnio smallint, in pSubtotal float, in pTotal float)
+BEGIN
+	insert into Nominas(mes, anio, subtotal, total)
+		values(pMes, pAnio, pSubtotal, pTotal);
+	select LAST_INSERT_ID();
+END$$
+
+DELIMITER ;
+
+
+
+DROP procedure IF EXISTS `insertEmpleadoXNomina`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `insertEmpleadoXNomina` (in pCedulaEmpleado int, in idNomina int)
+BEGIN
+	insert into EmpleadoXNomina(cedulaEmpleado, idNomina)
+		values(pCedulaEmpleado, idNomina);
+END$$
+
+DELIMITER ;
 
 DROP procedure IF EXISTS `getAllAreas`;
 
@@ -147,12 +192,12 @@ call insertArea('Area8', 14.000, 'productoA8');
 call insertArea('Area9', 1654.450, 'productoA9');
 call insertArea('Area10', 415.000, 'productoA10');
 
-call insertEmpleado(701234568, 'martin', 'app1','app22', 'secretario', 256.55, 8000);
-call insertEmpleado(709874567, 'jose', 'app2','app23', 'carpintero', 256.55, 5456);
-call insertEmpleado(701245879, 'maria', 'app13','app24', 'profesor', 256.55, 44874);
-call insertEmpleado(621584479, 'pedro', 'app4','app25', 'director', 215.55, 6654);
-call insertEmpleado(502154875, 'juan', 'app5','app26', 'secretario', 56.55, 5135);
-call insertEmpleado(705223698, 'carlos', 'app6','app247', 'ingeniero', 6556.55, 8845);
-call insertEmpleado(452125589, 'pepe', 'app7','app28', 'profesor', 856.55, 62154);
-call insertEmpleado(965458565, 'sofia', 'app8','app29', 'secretario', 456.55, 88956);
-call insertEmpleado(702800054, 'adrian', 'app9','app210', 'secretario', 966.55, 2215);*/
+call insertEmpleado(701234568, 'martin', 'app1','app22', 'secretario', 256.55);
+call insertEmpleado(709874567, 'jose', 'app2','app23', 'carpintero', 256.55);
+call insertEmpleado(701245879, 'maria', 'app13','app24', 'profesor', 256.55);
+call insertEmpleado(621584479, 'pedro', 'app4','app25', 'director', 215.55);
+call insertEmpleado(502154875, 'juan', 'app5','app26', 'secretario', 56.55);
+call insertEmpleado(705223698, 'carlos', 'app6','app247', 'ingeniero', 6556.55);
+call insertEmpleado(452125589, 'pepe', 'app7','app28', 'profesor', 856.55);
+call insertEmpleado(965458565, 'sofia', 'app8','app29', 'secretario', 456.55);
+call insertEmpleado(702800054, 'adrian', 'app9','app210', 'secretario', 966.55);*/
