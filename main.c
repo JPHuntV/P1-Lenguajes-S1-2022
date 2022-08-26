@@ -28,6 +28,10 @@ struct ValoresIniciales cargarValoresIniciales();
 void generarNomina();
 struct Empleado* agregarEmpleados(int *pCantidadNomina);
 bool enNomina(int cedula, struct Empleado *nomina, int j);
+
+void listarNominas();
+void imprimirNominas(struct Nomina *lNominas, int cantidad);
+void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad);
 int getNum(char* mesanio);
 bool esNumero(char *token);
 void pausa();
@@ -105,6 +109,7 @@ bool solicitarUsuario(){
     freeMysql();
     return row!= NULL;
 }
+
 void  menuOperativo(){
     system("clear");
     char opcion;
@@ -169,7 +174,7 @@ void  menuAdministrativo(){
         printf("\n#####  Menú administrativo  #####\n\n");
         printf("1.Registro de nomina \n");
         printf("2.Registro ventas. \n");
-        printf("3.Consulta de nomina.\n");
+        printf("3.Consulta de nomina.\n");//////////////////////
         printf("4.Consulta de ventas.\n");
         printf("5.Volver al menú principal.\n");
         printf("6.Salir.\n");
@@ -191,6 +196,7 @@ void  menuAdministrativo(){
 
         case '3':
             printf("Consulta de nominas");
+            listarNominas();
             break;
 
         case '4':
@@ -338,7 +344,6 @@ struct Empleado* listarEmpleados(){
     return lEmpleados;
 }
 
-
 void generarNomina(){
     struct Nomina nomina ;
     printf("\nIngrese el mes:\t");
@@ -471,8 +476,80 @@ bool enNomina(int cedula, struct Empleado *nomina, int j){
     return false;
 }
 
+void listarNominas(){
+    system("clear");
+    getAllNominas();
 
+    int i=0;
+    int cantidadNominas = (int)mysql_num_rows(res);
+    struct Nomina *lNominas =malloc(sizeof(struct Nomina)*cantidadNominas);
+    while ((row = mysql_fetch_row(res)) != NULL){
+        lNominas[i].mes = atoi(row[1]);
+        lNominas[i].anio = atoi(row[2]);
+        lNominas[i].subtotal = atof(row[3]);
+        lNominas[i].total = atof(row[4]);
+        i++;
+    }
+    imprimirNominas(lNominas, cantidadNominas);
+    freeMysql();
+    int num = -1;
+    printf("\nIngrese el id de la nomina para ver su detalle u otro caracter para terminar la selección\nOpción: ");
+    while (scanf("%d", &num)==1){
+        if(num < cantidadNominas){
+            system("clear");
+            printf("\n##### Detalle de la nomina #####");
+            printf("\nAño: \t%d\nMes: \t%d\nSubtotal: \t%f\nTotal: \t%f",
+                    lNominas[num].anio, lNominas[num].mes,lNominas[num].subtotal, lNominas[num].total);
+            int cantEmpleados = getEmpleadosByNomina(num);
+            int j=0;
+            struct Empleado *lEmpleados =malloc(sizeof(struct Empleado)*(int)mysql_num_rows(res));
+            while ((row = mysql_fetch_row(res)) != NULL)
+            {
+                lEmpleados[j].cedula = atoi(row[0]);
+                lEmpleados[j].nombre = row[1];
+                lEmpleados[j].apellido1 =  row[2];
+                lEmpleados[j].apellido2 = row[3];
+                lEmpleados[j].labor= row[4];
+                lEmpleados[j].salarioMensual = atof(row[5]);
+                j++;
+            }
+            imprimirEmpleados(lEmpleados, cantEmpleados);
+            printf("\n#########################################################\n");
+            freeMysql();
+            pausa();
+            imprimirNominas(lNominas, cantidadNominas);
+        }else{
+            printf("\nEsta nomina no existe\n");
+        }
+        printf("\nIngrese el id de la nomina para ver su detalle u otro caracter para terminar la selección\nOpción: ");
+            
+    }
+    freeMysql();
+    pausa();
+    return;
+}
 
+void imprimirNominas(struct Nomina *lNominas, int cantidad){
+    int i = 0;
+    printf("##### Nominas #####\n\n\tMes\t\tAño\t\tSubtotal\tTotal\n");
+    while (i<cantidad)
+    {
+        printf("%d.\t%d\t\t%d\t\t%f\t%f\n",i,lNominas[i].mes, lNominas[i].anio, lNominas[i].subtotal, lNominas[i].total);
+        i++;
+    }
+    return;
+}
+
+void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad){
+    int i = 0;
+    printf("\n\n##### Empleados #####\n\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
+    while(i<cantidad){            
+        printf("%d.\t%d \t%s %s %s \t%s \t%f  \t\t%f \n",i,
+        lEmpleados[i].cedula, lEmpleados[i].nombre, lEmpleados[i].apellido1, lEmpleados[i].apellido2,
+        lEmpleados[i].labor, lEmpleados[i].salarioMensual,  lEmpleados[i].salarioMensual*valoresIniciales.porcentajeCargaSocial);
+        i++;
+    }          
+}
 int getNum(char *mesanio){
     int num;
     while(scanf("%d", &num)!=1){
