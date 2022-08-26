@@ -23,4 +23,22 @@ struct ValoresIniciales
 	int numeroSecSigFact;
 	float porcentajeCargaSocial;
 };
+
+struct Empleado
+{
+    int cedula;
+	char *nombre;
+	char *apellido1;
+	char *apellido2;
+	char *labor;
+	float salarioMensual;
+	float salarioCargasSociales;
+};
+struct Nomina
+{
+    int mes;
+    int anio;
+    struct Empleado empleados[15];
+};
+
 #endif

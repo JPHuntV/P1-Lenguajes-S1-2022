@@ -10,6 +10,8 @@
 #define LSIZ 128
 #define RSIZ 10
 
+struct ValoresIniciales valoresIniciales;
+
 
 void menuPrincipal();
 
@@ -17,12 +19,15 @@ bool solicitarUsuario();
 void menuOperativo();
 void menuAdministrativo();
 
-
+int cantEmpleados = 0;
 void leerArchivo();
 void transformarArchivo(FILE *archivo);
 void listarAreas();
-void listarEmpleados();
+struct Empleado* listarEmpleados();
 struct ValoresIniciales cargarValoresIniciales();
+void generarNomina();
+bool enNomina(int cedula, struct Empleado *nomina, int j);
+int getNum(char* mesanio);
 bool esNumero(char *token);
 void pausa();
 void salir();
@@ -37,6 +42,7 @@ int main(){
 void menuPrincipal(){
     char opcion;
     char repetir = 1;
+    //printf("Cantidad de empleados: %d", CANT_EMP);
     do{
         
         printf("\n#####  Menú principal  #####\n\n");
@@ -152,10 +158,10 @@ void  menuAdministrativo(){
     system("clear");
     char opcion;
     char repetir = 1;
-    struct ValoresIniciales pValoresIniciales = cargarValoresIniciales();
+    valoresIniciales = cargarValoresIniciales();
     printf("\n-----Valores iniciales-----\n");
-    printf("Cedula jurídica: %d\nNombre: %s\nTeléfono: %d\nNumero de la siguiente factura: %d\n\n\n",pValoresIniciales.cedulaJuridica, pValoresIniciales.nombreComercio, 
-                        pValoresIniciales.telefono, pValoresIniciales.numeroSecSigFact);
+    printf("Cedula jurídica: %d\nNombre: %s\nTeléfono: %d\nNumero de la siguiente factura: %d\n\n\n",valoresIniciales.cedulaJuridica, valoresIniciales.nombreComercio, 
+                        valoresIniciales.telefono, valoresIniciales.numeroSecSigFact);
     do{
         
         printf("\n#####  Menú administrativo  #####\n\n");
@@ -173,6 +179,8 @@ void  menuAdministrativo(){
         {
         case '1':
             printf("registro de nomina");
+            
+            generarNomina();
             break;
         
         case '2':
@@ -212,8 +220,6 @@ struct ValoresIniciales cargarValoresIniciales(){
     return pValoresIniciales;
 }
 //////////////////////////////////
-
-
 void leerArchivo(){
 
     FILE *archivo;
@@ -246,7 +252,6 @@ void leerArchivo(){
     
     return;    
 }
-
 
 void transformarArchivo(FILE *archivo){
     char lineas[RSIZ][LSIZ];
@@ -307,20 +312,118 @@ void listarAreas(){
     return;
 }
 
-void listarEmpleados(){
+struct Empleado* listarEmpleados(){
     system("clear");
     getAllEmpleados();
-
-    printf("\n\tCedula\t\tNombre completo\t\tLabor\t\tSalario mensual\t\tSalario cargas sociales\n");
+    printf("\ncantidad de empleados: %d\tporcentaje:%f\n\n", (int)mysql_num_rows(res),valoresIniciales.porcentajeCargaSocial);
+    cantEmpleados = (int)mysql_num_rows(res);
+    printf("\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
     int i=0;
+    struct Empleado *lEmpleados =malloc(sizeof(struct Empleado)*(int)mysql_num_rows(res));
     while ((row = mysql_fetch_row(res)) != NULL)
     {
-        printf("%d.\t%s\t%s\t\t\t%s\t\t%s\t\t\t%s\t\n",i,row[0], row[1],row[2], row[3],row[4]);
+        lEmpleados[i].cedula = atoi(row[0]);
+        lEmpleados[i].nombre = row[1];
+        lEmpleados[i].apellido1 =  row[2];
+        lEmpleados[i].apellido2 = row[3];
+        lEmpleados[i].labor= row[4];
+        lEmpleados[i].salarioMensual = atof(row[5]);
+        lEmpleados[i].salarioCargasSociales = atof(row[5])*valoresIniciales.porcentajeCargaSocial;
+        printf("%d.\t%s \t%s %s %s \t%s \t%s  \t\t%f \n",i,row[0], row[1],row[2], row[3],row[4],row[5],atof(row[5])*valoresIniciales.porcentajeCargaSocial);
         i++;
     }
     freeMysql();
-    pausa();
+    
+    return lEmpleados;
+}
+
+
+void generarNomina(){
+    struct Nomina nomina;
+    printf("\nIngrese el mes:\t");
+    nomina.mes = getNum("mes");
+    while(nomina.mes>12 || nomina.mes<1){
+        printf("\n\nIngrese un mes valido (entre 1 y 12):\t");
+        nomina.mes = getNum("mes");
+    }
+    printf("\nIngrese el año:\t");
+    nomina.anio = getNum("año");
+    while(nomina.anio>2100 || nomina.anio<2021){
+        printf("\n\nIngrese un año valido (entre 2021 y 2100):\t");
+        nomina.anio = getNum("año");
+    }
+    printf("\nAño y mes ingresados: %d\t%d",nomina.anio, nomina.mes);
+
+    struct Empleado *lEmpleados = listarEmpleados();
+    struct Empleado *empleadosNomina = NULL;
+
+
+    int num = -1;
+    int j = 0;
+    printf("cantidad: %d", cantEmpleados);
+
+    printf("selecione un empleado: ");
+    while (scanf("%d", &num)==1)
+    {
+        
+        if(num < cantEmpleados){
+            if(!enNomina(lEmpleados[num].cedula,empleadosNomina,j) ){
+            
+                empleadosNomina = realloc(empleadosNomina, sizeof(struct Empleado)*++j);
+                
+                empleadosNomina[j-1] = lEmpleados[num];
+                printf ("\n\nempleados en nomina: ");
+                int i = 0;
+                printf("\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
+                while(i<j){
+                    printf("%d.\t%d \t%s %s %s \t%s \t%f  \t\t \n",i,
+                    empleadosNomina[i].cedula,empleadosNomina[i].nombre,empleadosNomina[i].apellido1, empleadosNomina[i].apellido2,
+                    empleadosNomina[i].labor,empleadosNomina[i].salarioMensual);
+                    ++i;
+                }
+            }else{
+                printf("\nEste empleado ya fue agregado a la nomina");
+            }
+            
+        }else{
+            printf("\nEste empleado no existe\n\n");
+        }
+        printf("\nselecione un empleado: ");
+        
+    } 
+    
+    
+    //guardar nomina y no repetir empleados
+    
+    
     return;
+}
+
+bool enNomina(int cedula, struct Empleado *nomina, int j){
+    int i = 0;
+    while (i<j)
+    {
+        //printf("\n%d", nomina[i].cedula);
+        if(cedula == nomina[i].cedula){
+            //printf("ya existe");
+            return true;
+        }
+        i++;
+    }
+    return false;
+}
+
+
+
+int getNum(char *mesanio){
+    int num;
+    while(scanf("%d", &num)!=1){
+        printf("\nEl valor ingresado es incorrecto\nPor favor intentelo de nuevo\n");
+        printf("\nIngrese el %s:\t", mesanio);
+        scanf("%*s");
+    }
+    return num;
+    
 }
 /*******************************************************************/
 
