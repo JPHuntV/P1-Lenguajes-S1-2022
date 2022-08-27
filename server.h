@@ -27,8 +27,9 @@ int conectarServidor(){
 
 /////////////////////////////////
 void insertProducto(struct Producto *pProducto){
+    printf("insertproducto \n\n");
     char query[2000];
-    sprintf(query, "call insertProducto('%s','%s', %d,%f)",pProducto->idProducto, pProducto->nombre, pProducto->costo,pProducto->impAplicado);
+    sprintf(query, "call insertProducto('%s','%s', %f,%f)",pProducto->idProducto, pProducto->nombre, pProducto->costo,pProducto->impAplicado);
     if(mysql_query(conn, query))
     {
         fprintf(stderr, "%s\n\n", mysql_error(conn));
@@ -68,23 +69,36 @@ void insertEmpleadoXNomina(int cedula, int pIdNomina, int pCantidadNomina){
 }
 
 
-void insertFactura(struct Factura *pFactura, struct ValoresIniciales *pValoresIniciales){
+void insertFactura(struct Factura *pFactura,int *pIdFactura, struct ValoresIniciales *pValoresIniciales){
     char query[2000];
     sprintf(query, "call insertFactura('%s',%d,%d,'%d-%d-%d','%s',%f,%f,%f)",
             pValoresIniciales->nombreComercio, pValoresIniciales->cedulaJuridica,pValoresIniciales->telefono,
-            pFactura->anio, pFactura->mes, pFactura->dia, pFactura->nombreCliente, 555.00,444.00,222.00/*pFactura->subtotal, pFactura->impuestosVenta, pFactura->Total*/);
+            pFactura->anio, pFactura->mes, pFactura->dia, pFactura->nombreCliente, pFactura->subtotal,pFactura->impuestosVenta,pFactura->Total/*pFactura->subtotal, pFactura->impuestosVenta, pFactura->Total*/);
     if(mysql_query(conn, query))
     {
         fprintf(stderr, "%s\n\n", mysql_error(conn));
     
     }else{
-        printf("\nLa nomina se ha insertado correctamente!\n");
-    
+        printf("\nLa factura se ha insertado correctamente!\n");
+        res = mysql_store_result(conn);
+        *pIdFactura = atoi(mysql_fetch_row(res)[0]);
     }
-    printf("\nLa nomina se ha insertado correctamente!\n");
+
     return;
 }
 
+void insertProductoXFactura(char *pIdProducto, int pIdFactura, int pCantidad){
+    char query[2000];    
+    sprintf(query, "call insertProductoXFactura('%s','%d','%d')", pIdProducto, pIdFactura, pCantidad);
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n\n", mysql_error(conn));
+    }else{
+        printf("\nEl producto se ha insertado correctamente!\n");
+        res = mysql_use_result(conn);
+    }
+    return;
+}
 
 int getAllAreas(){
     char *query = "call getAllAreas()";
@@ -97,6 +111,7 @@ int getAllAreas(){
     
     return (int)mysql_num_rows(res);
 }
+
 int getAllEmpleados(){
     char *query = "call getAllEmpleados()";
     if(mysql_query(conn, query))
@@ -108,7 +123,6 @@ int getAllEmpleados(){
     
     return (int)mysql_num_rows(res);
 }
-
 
 int getAllNominas(){
     char *query = "call getAllNominas()";

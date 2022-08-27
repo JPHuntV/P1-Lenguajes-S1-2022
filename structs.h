@@ -5,7 +5,7 @@ struct Producto
 {
     char *idProducto;
     char *nombre;
-    int costo;
+    float costo;
     float impAplicado;
     int cantidad;
 };
@@ -54,7 +54,7 @@ struct Area
 struct Factura
 {
     struct Producto *productos;
-    char *nombreCliente;
+    char nombreCliente[60];
     int dia;
     int mes;
     int anio;

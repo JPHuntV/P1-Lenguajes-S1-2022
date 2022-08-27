@@ -17,6 +17,7 @@ void transformarArchivo(FILE *archivo);
 int main(){
     system("clear");
     conectarServidor();
+    valoresIniciales = cargarValoresIniciales();
     menuPrincipal();
     return 0;
 }
@@ -24,7 +25,7 @@ int main(){
 void menuPrincipal(){
     char opcion;
     char repetir = 1;
-    valoresIniciales = cargarValoresIniciales();
+    
     //printf("Cantidad de empleados: %d", CANT_EMP);
     do{
         
@@ -267,9 +268,9 @@ void transformarArchivo(FILE *archivo){
             struct Producto pProducto;
             pProducto.idProducto = idProducto;
             pProducto.nombre = nombre;
-            pProducto.costo = atoi(costo);
+            pProducto.costo = atof(costo);
             pProducto.impAplicado = atof(impAplicado);
-            printf("idProducto:%s\tnombre:%s\tcosto:%d\timpuesto Aplicado:%f\n\n", 
+            printf("idProducto:%s\tnombre:%s\tcosto:%f\timpuesto Aplicado:%f\n\n", 
                         pProducto.idProducto,pProducto.nombre, pProducto.costo, pProducto.impAplicado);
             insertProducto(&pProducto);
         } 
@@ -466,22 +467,24 @@ void generarFactura(){
     //obtener y mostrar productos
     struct Factura pFactura;
     int guardar = 0;
-    int cantidadProductos;
-    struct Producto *productosFactura = menuProductos(&guardar, &cantidadProductos);
+    int cantidadProductos = 0;
+    pFactura.productos= menuProductos(&guardar, &cantidadProductos);
+
+    printf("\nvoy a imprimir\n");
     printf("\nquiere guardar?: %d", guardar);
     if(guardar){
-        pFactura.productos= productosFactura;
         int i = 0;
+        printf("cantidad de productos: %d", cantidadProductos);
         while(i<cantidadProductos){
-            pFactura.subtotal += productosFactura[i].costo;
-            pFactura.impuestosVenta += (productosFactura[i].costo*productosFactura[i].impAplicado)-productosFactura[i].costo;
-            pFactura.Total +=productosFactura[i].costo*productosFactura[i].impAplicado;
+            pFactura.subtotal += pFactura.productos[i].costo;
+            pFactura.impuestosVenta += (pFactura.productos[i].costo*pFactura.productos[i].impAplicado)-pFactura.productos[i].costo;
+            pFactura.Total +=pFactura.productos[i].costo*pFactura.productos[i].impAplicado;
             i++;
         }
 
         getchar();
         printf("\nNombre del cliente:\t");
-        scanf("%[^\n]", pFactura.nombreCliente);
+        scanf(" %[^\n]", pFactura.nombreCliente);
 
         printf("\nDia(dd):\t");
         scanf("%d", &pFactura.dia);
@@ -516,17 +519,17 @@ void generarFactura(){
             scanf(" %c", &opcion);
 
             if(opcion == 'y' || opcion == 'Y'){
-                
-                insertFactura(&pFactura, &valoresIniciales);
-                int idFactura = (int) mysql_num_rows(res);
+                int idFactura;
+                insertFactura(&pFactura,&idFactura, &valoresIniciales);
+                printf("sali");
                 printf("id de la factura: %d", idFactura);
                 freeMysql();
                 int i = 0;
                 while(i<cantidadProductos){
-                    
-                    insertEmpleadoXNomina(atoi(pFactura.productos[i].idProducto),idFactura, pFactura.productos[i].cantidad );
+                    insertProductoXFactura(pFactura.productos[i].idProducto,idFactura, pFactura.productos[i].cantidad );
                     freeMysql();
                     i++;
+
                 }
             }
         }
@@ -592,7 +595,9 @@ struct Producto* menuProductos(int *guardar, int *cantidadProductos){
 
     }while(repetir);
 
-    *cantidadProductos = pcantidadProductos;
+    *cantidadProductos = j;
+
+    return productosFactura;
 
 }
 
@@ -668,7 +673,7 @@ struct Producto* listarProductos(int *pCantidadProductos){
     {
         lProductos[i].idProducto = row[0];
         lProductos[i].nombre = row[1];
-        lProductos[i].costo =  atoi(row[2]);
+        lProductos[i].costo =  atof(row[2]);
         lProductos[i].impAplicado = atof(row[3]);
         i++;
     }
@@ -789,7 +794,7 @@ void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCan
     }
     printf("\n");
     while(i<cantidad){            
-        printf("%d.\t%s \t\t%s \t\t%d \t\t%f ",i,
+        printf("%d.\t%s \t\t%s \t\t%f \t\t%f ",i,
         lProductos[i].idProducto, lProductos[i].nombre, lProductos[i].costo, lProductos[i].impAplicado);
         if(mostrarCant == 1){
             printf("\t\t%d", lProductos[i].cantidad);
@@ -815,11 +820,17 @@ int getNum(char *mesanio){
 
 bool esNumero(char *token){
     bool res = true;
-    for(int i = 0 ; token[i]!='\0';i++){
-        if(!isdigit(token[i])){res = false;}
+    printf(" atoi:\t %d",atoi(token));
+    printf(" atof:\t %f\n\n",atof(token));
+   
+    if(atoi(token) || atof(token)){
+        return true;
     }
+    /*for(int i = 0 ; token[i]!='\0';i++){
+        if(!isdigit(token[i])){res = false;}
+    }*/
 
-    return res;
+    return false;
 }
 void pausa(){
     getchar();

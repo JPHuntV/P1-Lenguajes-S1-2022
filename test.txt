@@ -1,4 +1,7 @@
-A1,p1,102,102
-B2,p2,1034,132
-A3,p3,22,13
-C4,p44,352,1
+D1,Papaya,500,1.5
+D2,manzana,100,2.0
+F3,Culantro,300,1.0
+G4,Paquete de Arroz,1250,3.2
+h4, prueba, 12.5, 2
+h5, prueba4, 15.5, 2
+u5, fallo, a , 3
