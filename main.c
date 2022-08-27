@@ -5,37 +5,14 @@
 #include <time.h>
 #include "structs.h"
 #include "server.h"
-
+#include "declaraciones.h"
 
 #define LSIZ 128
 #define RSIZ 10
 
 struct ValoresIniciales valoresIniciales;
 
-
-void menuPrincipal();
-
-bool solicitarUsuario();
-void menuOperativo();
-void menuAdministrativo();
-
-int cantEmpleados = 0;
-void leerArchivo();
 void transformarArchivo(FILE *archivo);
-void listarAreas();
-struct Empleado* listarEmpleados();
-struct ValoresIniciales cargarValoresIniciales();
-void generarNomina();
-struct Empleado* agregarEmpleados(int *pCantidadNomina);
-bool enNomina(int cedula, struct Empleado *nomina, int j);
-
-void listarNominas();
-void imprimirNominas(struct Nomina *lNominas, int cantidad);
-void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad);
-int getNum(char* mesanio);
-bool esNumero(char *token);
-void pausa();
-void salir();
 
 int main(){
     system("clear");
@@ -135,7 +112,7 @@ void  menuOperativo(){
         
         case '2':
             printf("listar areas");
-            listarAreas();
+            listarAreas(0);
             break;
         
         case '3':
@@ -192,6 +169,7 @@ void  menuAdministrativo(){
         
         case '2':
             printf("registro de ventas");
+            generarFactura();
             break;
 
         case '3':
@@ -303,28 +281,35 @@ void transformarArchivo(FILE *archivo){
 
 }
 
-void listarAreas(){
+struct Area* listarAreas(int *cantidadAreas){
     system("clear");
     getAllAreas();
-
-    printf("\n\tId Area\t\tNombre\t\tDimensión\t\tProducto principal producido\n");
+    printf("##### Areas #####");
+    //int cantidadAreas = (int)mysql_num_rows(res);
+    //printf("\n\tId Area\t\tNombre\t\tDimensión\t\tProducto principal producido\n");
     int i=0;
+    *cantidadAreas = (int)mysql_num_rows(res);
+    struct Area *lAreas = malloc(sizeof(struct Area)*(int)mysql_num_rows(res));
     while ((row = mysql_fetch_row(res)) != NULL)
     {
+        lAreas[i].nombre = row[1];
+        lAreas[i].dimension = atof(row[2]);
+        lAreas[i].productoPrincipal = row[3];
         printf("%d.\t%s\t\t%s\t\t%s\t\t\t%s\t\n",i,row[0], row[1],row[2], row[3]);
         i++;
     }
+    //imprimirAreas(lAreas, cantidadAreas);
     freeMysql();
-    pausa();
-    return;
+
+    return lAreas;
 }
+
 
 struct Empleado* listarEmpleados(){
     system("clear");
     getAllEmpleados();
     cantEmpleados = (int)mysql_num_rows(res);
     printf("##### Empleados #####");
-    printf("\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
     int i=0;
     struct Empleado *lEmpleados =malloc(sizeof(struct Empleado)*(int)mysql_num_rows(res));
     while ((row = mysql_fetch_row(res)) != NULL)
@@ -335,9 +320,9 @@ struct Empleado* listarEmpleados(){
         lEmpleados[i].apellido2 = row[3];
         lEmpleados[i].labor= row[4];
         lEmpleados[i].salarioMensual = atof(row[5]);
-        printf("%d.\t%s \t%s %s %s \t%s \t%s  \t\t%f \n",i,row[0], row[1],row[2], row[3],row[4],row[5],atof(row[5])*valoresIniciales.porcentajeCargaSocial);
         i++;
     }
+    imprimirEmpleados(lEmpleados, cantEmpleados);
     printf("\n#########################################################\n");
     freeMysql();
     
@@ -404,10 +389,9 @@ void generarNomina(){
     if(opcion == 'y' || opcion == 'Y'){
         int idNomina;
         insertNomina(&nomina, &idNomina);
-        
+        freeMysql();
         int i = 0;
         while(i<cantidadNomina){
-            freeMysql();
             insertEmpleadoXNomina(nomina.empleados[i].cedula,idNomina, cantidadNomina );
             freeMysql();
             i++;
@@ -476,6 +460,240 @@ bool enNomina(int cedula, struct Empleado *nomina, int j){
     return false;
 }
 
+
+
+void generarFactura(){
+    //obtener y mostrar productos
+    struct Factura pFactura;
+    int guardar = 0;
+    int cantidadProductos;
+    struct Producto *productosFactura = menuProductos(&guardar, &cantidadProductos);
+    printf("\nquiere guardar?: %d", guardar);
+    if(guardar){
+        pFactura.productos= productosFactura;
+        int i = 0;
+        while(i<cantidadProductos){
+            pFactura.subtotal += productosFactura[i].costo;
+            pFactura.impuestosVenta += (productosFactura[i].costo*productosFactura[i].impAplicado)-productosFactura[i].costo;
+            pFactura.Total +=productosFactura[i].costo*productosFactura[i].impAplicado;
+            i++;
+        }
+
+        getchar();
+        printf("\nNombre del cliente:\t");
+        scanf("%[^\n]", pFactura.nombreCliente);
+
+        printf("\nDia(dd):\t");
+        scanf("%d", &pFactura.dia);
+
+        printf("\nMes(mm):\t");
+        scanf("%d", &pFactura.mes);
+
+        printf("\nAño(AAAA):\t");
+        scanf("%d", &pFactura.anio);
+
+        int cantidadAreas = 0;
+        struct Area *lAreas = listarAreas(&cantidadAreas);
+        printf("cantidad de areas: %d", cantidadAreas);
+
+        printf("\n\nSeleciones el area de producción:\t");
+        int num;
+        int ingreso = 0;
+        while (scanf("%d", &num)==1){
+            if(num < cantidadAreas){
+                    pFactura.area = lAreas[num];
+                    ingreso = 1;
+                    break;
+            }else{
+                printf("\nEsta area no existe\n\n");
+            }
+        printf("\nIngrese el id del area u otro caracter para cancelar el registro\nOpción: ");  
+        }
+        if(ingreso){
+            getchar();
+            char opcion;
+            printf("\n\n¿Desea guardar esta factura ? (y/n): ");
+            scanf(" %c", &opcion);
+
+            if(opcion == 'y' || opcion == 'Y'){
+                
+                insertFactura(&pFactura, &valoresIniciales);
+                int idFactura = (int) mysql_num_rows(res);
+                printf("id de la factura: %d", idFactura);
+                freeMysql();
+                int i = 0;
+                while(i<cantidadProductos){
+                    
+                    insertEmpleadoXNomina(atoi(pFactura.productos[i].idProducto),idFactura, pFactura.productos[i].cantidad );
+                    freeMysql();
+                    i++;
+                }
+            }
+        }
+
+
+    }
+    return;
+    
+}
+
+
+struct Producto* menuProductos(int *guardar, int *cantidadProductos){
+    int pcantidadProductos = 0;
+    struct Producto *lProductos = listarProductos(&pcantidadProductos);
+    struct Producto *productosFactura = NULL;
+    int j = 0;//tamaño array
+
+
+    char opcion;
+        char repetir = 1;
+        do{
+        
+        printf("#####   Menú productos   #####\n\n");
+        printf("1)Agregar producto. \n");
+        printf("2)Eliminar producto\n");
+        printf("3)Guardar\n");
+        printf("4)Salir\n");
+        printf("#############################\n");
+        printf("Seleccione una opción:\t");
+
+        scanf(" %c", &opcion);
+        switch (opcion)
+        {
+        case '1':  
+            productosFactura =agregarProducto(productosFactura, lProductos, pcantidadProductos, &j);
+            printf("\n\nsali de agregar: %d:\n\n", j);
+            break;
+        
+        case '2':
+            productosFactura =  eliminarProducto(productosFactura, &j);
+            break;
+        case '3':
+            *guardar = 1;
+            repetir =0;
+            break;
+        
+        case '4':
+            repetir = 0;
+            break;
+        
+        default:
+            break;
+        }
+
+        if(opcion =='1' || opcion =='2'){
+            imprimirProductos(lProductos, pcantidadProductos,0);       
+            printf ("\n\n##### Productos en factura #####");
+            int i = 0;
+            
+            imprimirProductos(productosFactura, j, 1);
+            printf("\n\n");
+        }         
+
+    }while(repetir);
+
+    *cantidadProductos = pcantidadProductos;
+
+}
+
+struct Producto* agregarProducto(struct Producto *productosFactura,struct Producto *lProductos, int pcantidadProductos, int *j){
+    int num = -1;
+    int k = *j;
+    printf("\nIngrese el id del producto u otro caracter para terminar la selección\nOpción: ");
+    while (scanf("%d", &num)==1){
+        if(num < pcantidadProductos){
+                productosFactura = realloc(productosFactura, sizeof(struct Producto)*++k);   
+                int cantidadProd = 0;
+                printf("\nCantidad: ");
+                scanf("%d", &cantidadProd);
+                if(!enFactura(lProductos[num].idProducto,productosFactura,k) ){
+                    productosFactura[k-1] = lProductos[num];
+                    productosFactura[k-1].cantidad = cantidadProd;
+                    break;
+                }else{
+                    int t = 0;
+                    while (t<k)
+                    {
+                        if(lProductos[num].idProducto == productosFactura[t].idProducto){
+                            productosFactura[t].cantidad += cantidadProd;
+                            k--;
+                            break;
+                        }
+                        t++;
+                    }
+                    break;
+                    
+                }   
+        }else{
+            printf("\nEste empleado no existe\n\n");
+        }
+        printf("\nIngrese el id del producto u otro caracter para terminar la selección\nOpción: ");
+        
+    }
+    *j= k; 
+    return productosFactura;
+}
+
+struct Producto* eliminarProducto(struct Producto *productosFactura, int *j){
+    printf("\n\n\n eliminar productos");
+
+    int num = -1;
+    int k = *j;
+    printf("\nIngrese el id del producto u otro caracter para terminar la selección\nOpción: ");
+    while (scanf("%d", &num)==1){
+        if(num < k){
+            int i = 0;
+            for(i =1;i <k-1;i++){
+                productosFactura[i]=productosFactura[i+1];
+            }
+            k -=1;
+            break;
+        }else{
+            printf("\nEste producto no existe en la factura\n\n");
+        }
+        printf("\nIngrese el id del producto u otro caracter para terminar la selección\nOpción: ");         
+    } 
+    *j = k;
+    return productosFactura;
+}
+
+struct Producto* listarProductos(int *pCantidadProductos){
+    system("clear");
+    getAllProductos();
+    *pCantidadProductos = (int)mysql_num_rows(res);
+    printf("##### Productos #####");
+    int i=0;
+    struct Producto *lProductos =malloc(sizeof(struct Producto)*(int)mysql_num_rows(res));
+    while ((row = mysql_fetch_row(res)) != NULL)
+    {
+        lProductos[i].idProducto = row[0];
+        lProductos[i].nombre = row[1];
+        lProductos[i].costo =  atoi(row[2]);
+        lProductos[i].impAplicado = atof(row[3]);
+        i++;
+    }
+    printf("\n\ncantidad productos%d", *pCantidadProductos);
+    imprimirProductos(lProductos, *pCantidadProductos,0);
+    printf("\n#########################################################\n");
+    freeMysql();
+    
+    return lProductos;
+}
+
+bool enFactura(char *idProducto, struct Producto *factura, int j){
+    int i = 0;
+    while (i<j)
+    {
+        //printf("\n%d", nomina[i].cedula);
+        if(idProducto == factura[i].idProducto){
+            //printf("ya existe");
+            return true;
+        }
+        i++;
+    }
+    return false;
+}
+
 void listarNominas(){
     system("clear");
     getAllNominas();
@@ -529,6 +747,18 @@ void listarNominas(){
     return;
 }
 
+void imprimirAreas(struct Area *lAreas, int cantidad){
+    int i = 0;
+    printf("\n\tId Area\t\tNombre\t\tDimensión\t\tProducto principal producido\n");;
+    while (i<cantidad)
+    {
+        printf("%d.\t%s\t\t%s\t\t%s\t\t\t%s\t\n",i,row[0], row[1],row[2], row[3]);
+        i++;
+    }
+    return;
+}
+
+
 void imprimirNominas(struct Nomina *lNominas, int cantidad){
     int i = 0;
     printf("##### Nominas #####\n\n\tMes\t\tAño\t\tSubtotal\tTotal\n");
@@ -550,6 +780,26 @@ void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad){
         i++;
     }          
 }
+
+void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCant){
+    int i = 0;
+    printf("\n\n\tId Producto \tNombre \t\tCosto \t\tImpuesto aplicado ");
+    if(mostrarCant == 1){
+        printf("\t\tCantidad");
+    }
+    printf("\n");
+    while(i<cantidad){            
+        printf("%d.\t%s \t\t%s \t\t%d \t\t%f ",i,
+        lProductos[i].idProducto, lProductos[i].nombre, lProductos[i].costo, lProductos[i].impAplicado);
+        if(mostrarCant == 1){
+            printf("\t\t%d", lProductos[i].cantidad);
+        }
+        printf("\n");
+        i++;
+    }          
+}
+
+
 int getNum(char *mesanio){
     int num;
     while(scanf("%d", &num)!=1){

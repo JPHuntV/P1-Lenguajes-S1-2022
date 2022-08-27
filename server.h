@@ -67,6 +67,25 @@ void insertEmpleadoXNomina(int cedula, int pIdNomina, int pCantidadNomina){
     return;
 }
 
+
+void insertFactura(struct Factura *pFactura, struct ValoresIniciales *pValoresIniciales){
+    char query[2000];
+    sprintf(query, "call insertFactura('%s',%d,%d,'%d-%d-%d','%s',%f,%f,%f)",
+            pValoresIniciales->nombreComercio, pValoresIniciales->cedulaJuridica,pValoresIniciales->telefono,
+            pFactura->anio, pFactura->mes, pFactura->dia, pFactura->nombreCliente, 555.00,444.00,222.00/*pFactura->subtotal, pFactura->impuestosVenta, pFactura->Total*/);
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n\n", mysql_error(conn));
+    
+    }else{
+        printf("\nLa nomina se ha insertado correctamente!\n");
+    
+    }
+    printf("\nLa nomina se ha insertado correctamente!\n");
+    return;
+}
+
+
 int getAllAreas(){
     char *query = "call getAllAreas()";
     if(mysql_query(conn, query))
@@ -103,6 +122,17 @@ int getAllNominas(){
     return (int)mysql_num_rows(res);
 }
 
+int getAllProductos(){
+    char *query = "call getAllProductos()";
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n", mysql_error(conn));
+    }
+    res = mysql_store_result(conn);
+    
+    
+    return (int)mysql_num_rows(res);
+}
 
 int getEmpleadosByNomina(int nomina){
     char query[2000];

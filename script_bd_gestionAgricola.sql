@@ -63,7 +63,29 @@ create table EmpleadoXNomina
     foreign key (idNomina) references Nominas(idNomina)
 );
 
+create table Factura
+(
+	numeroFactura int primary key auto_increment,
+    nombreLocal varchar(30) not null,
+    cedulaJuridica int not null,
+    telefono int not null,
+    fecha date not null,
+    cliente varchar (60),
+    subtotal float not null,
+    impuestoVenta float not null,
+    total float not null
+    
+);
 
+
+create table ProductoXFactura(
+	idProductoXFactura int primary key auto_increment,
+    idProducto varchar(10),
+    numeroFactura int, 
+    cantidad int not null,
+    foreign key (idProducto) references Productos(idProducto),
+    foreign key (numeroFactura) references Factura(numeroFactura)
+);
 DROP procedure IF EXISTS `insertProducto`;
 
 DELIMITER $$
@@ -114,8 +136,6 @@ END$$
 
 DELIMITER ;
 
-
-
 DROP procedure IF EXISTS `insertEmpleadoXNomina`;
 
 DELIMITER $$
@@ -124,6 +144,33 @@ CREATE PROCEDURE `insertEmpleadoXNomina` (in pCedulaEmpleado int, in idNomina in
 BEGIN
 	insert into EmpleadoXNomina(cedulaEmpleado, idNomina)
 		values(pCedulaEmpleado, idNomina);
+END$$
+
+DELIMITER ;
+
+DROP procedure IF EXISTS `insertFactura`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `insertFactura` (in pNombreLocal varchar(30), in pCedulaJuridica int, in pTelefono int,
+									in pFecha date, in pCliente varchar(60), in pSubtotal float,
+                                    in pImpuestoVenta float, in pTotal float)
+BEGIN
+	insert into Factura(nombreLocal, cedulaJuridica, telefono, fecha,cliente, subtotal, impuestoVenta, total)
+		values(pNombreLocal, pCedulaJuridica, pTelefono, pFecha,pCliente, pSubtotal, pImpuestoVenta, pTotal);
+	select LAST_INSERT_ID();
+END$$
+
+DELIMITER ;
+
+DROP procedure IF EXISTS `insertProductoXFactura`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `insertProductoXFactura` (in pIdProducto varchar(10), in pNumeroFactura int, in pCantidad int)
+BEGIN
+	insert into ProductoXFactura(idProducto, numeroFactura, cantidad)
+		values(pIdProducto, pNumeroFactura, pCantidad);
 END$$
 
 DELIMITER ;
@@ -183,6 +230,35 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+DROP procedure IF EXISTS `getAllProductos`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `getAllProductos` ()
+BEGIN
+		select * from Productos;
+END$$
+
+DELIMITER ;
+
+
+
+DROP procedure IF EXISTS `getEmpleadosByNomina`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `getEmpleadosByNomina` (in pIdNomina int)
+BEGIN
+		select * from Empleados e
+        inner join EmpleadoXNomina en on e.cedula = en.cedulaEmpleado
+        where idNomina = pIdNomina ;
+END$$
+
+DELIMITER ;
+
+call getEmpleadosByNomina(20);
 /************DDL
 insert into Usuarios(usuario, clave)
 values('Usuarioej1', 'contraseñaEj1'),
