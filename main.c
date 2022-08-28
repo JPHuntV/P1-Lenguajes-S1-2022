@@ -180,6 +180,7 @@ void  menuAdministrativo(){
 
         case '4':
             printf("Consulta de ventas");
+            listarFacturas();
             break;
 
         case '5':
@@ -310,7 +311,6 @@ struct Empleado* listarEmpleados(){
     system("clear");
     getAllEmpleados();
     cantEmpleados = (int)mysql_num_rows(res);
-    printf("##### Empleados #####");
     int i=0;
     struct Empleado *lEmpleados =malloc(sizeof(struct Empleado)*(int)mysql_num_rows(res));
     while ((row = mysql_fetch_row(res)) != NULL)
@@ -332,46 +332,35 @@ struct Empleado* listarEmpleados(){
 
 void generarNomina(){
     struct Nomina nomina ;
+
     printf("\nIngrese el mes:\t");
-    /////nomina.mes = getNum("mes");
-    nomina.mes = 2;
+    nomina.mes = getNum("mes");
     while(nomina.mes>12 || nomina.mes<1){
-       ////// printf("\n\nIngrese un mes valido (entre 1 y 12):\t");
-        //////nomina.mes = getNum("mes");
-        
+        printf("\n\nIngrese un mes valido (entre 1 y 12):\t");
+        nomina.mes = getNum("mes");   
     }
+
     printf("\nIngrese el año:\t");
-    /////nomina.anio = getNum("año");
-    nomina.anio = 2022;
+    nomina.anio = getNum("año");
     while(nomina.anio>2100 || nomina.anio<2021){
-        //////////printf("\n\nIngrese un año valido (entre 2021 y 2100):\t");
-       ///////// nomina.anio = getNum("año");
-       
+        printf("\n\nIngrese un año valido (entre 2021 y 2100):\t");
+        nomina.anio = getNum("año");
     }
 
     int cantidadNomina = 0;
     nomina.empleados = agregarEmpleados(&cantidadNomina);
-   // printf("\n\n%d", nomina.empleados[0].cedula);
-
     
-    //printf("\n%s",nomina.empleados[1].nombre);
-    printf("cantidad en nomina: %d", cantidadNomina);
-
-
     //imprimir detalle nomina
-
     system("clear");
     printf("\n##### Detalle de la nomina #####");
     printf("\nAño: \t%d\nMes: \t%d", nomina.anio, nomina.mes);
 
+    //subtotal y total
     float subtotal = 0;
     float total = 0;
-    printf("\n\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
     int i=0;
+    imprimirEmpleados(&nomina.empleados[i],cantidadNomina);
     while (i < cantidadNomina){
-        printf("%d.\t%d \t%s %s %s \t%s \t%f  \t\t%f \n",i,
-        nomina.empleados[i].cedula,nomina.empleados[i].nombre,nomina.empleados[i].apellido1, nomina.empleados[i].apellido2,
-        nomina.empleados[i].labor,nomina.empleados[i].salarioMensual, nomina.empleados[i].salarioMensual * valoresIniciales.porcentajeCargaSocial);
         subtotal += nomina.empleados[i].salarioMensual;
         total += nomina.empleados[i].salarioMensual * valoresIniciales.porcentajeCargaSocial;
         ++i;
@@ -380,13 +369,10 @@ void generarNomina(){
     nomina.total = total;
     printf("\n\nSubtotal: \t%f\nTotal: \t\t%f", subtotal, total);
 
-
-    
     getchar();
     char opcion;
     printf("\n\n¿Desea guardar esta nomina ? (y/n): ");
     scanf(" %c", &opcion);
-
     if(opcion == 'y' || opcion == 'Y'){
         int idNomina;
         insertNomina(&nomina, &idNomina);
@@ -398,7 +384,6 @@ void generarNomina(){
             i++;
         }
     }
-
     getchar();
     freeMysql();
     pausa();
@@ -411,41 +396,28 @@ struct Empleado* agregarEmpleados(int *pCantidadNomina){
     struct Empleado *empleadosNomina = NULL;
     int num = -1;
     int j = 0;
-    //printf("cantidad: %d", cantEmpleados);
     printf("\nIngrese el id del empleado u otro caracter para terminar la selección\nOpción: ");
-    while (scanf("%d", &num)==1)
-    {
+    while (scanf("%d", &num)==1){
         if(num < cantEmpleados){
             if(!enNomina(lEmpleados[num].cedula,empleadosNomina,j) ){
-            
                 empleadosNomina = realloc(empleadosNomina, sizeof(struct Empleado)*++j);
-                
                 empleadosNomina[j-1] = lEmpleados[num];
-                printf ("\n\n##### Empleados en nomina #####");
-                int i = 0;
-                printf("\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
-                while(i<j){
-                    printf("%d.\t%d \t%s %s %s \t%s \t%f  \t\t %f\n",i,
-                    empleadosNomina[i].cedula,empleadosNomina[i].nombre,empleadosNomina[i].apellido1, empleadosNomina[i].apellido2,
-                    empleadosNomina[i].labor,empleadosNomina[i].salarioMensual, 
-                    empleadosNomina[i].salarioMensual * valoresIniciales.porcentajeCargaSocial);
-                    ++i;
-                }
+                system("clear");
+                imprimirEmpleados(lEmpleados, cantEmpleados);
+                printf ("\n\n########## Empleados en nomina ##########");
+                imprimirEmpleados(empleadosNomina,j);
             }else{
                 printf("\nEste empleado ya fue agregado a la nomina");
-            }
-            
+            } 
         }else{
             printf("\nEste empleado no existe\n\n");
         }
-        printf("\nIngrese el id del empleado u otro caracter para terminar la selección\nOpción: ");
-        
+        printf("\nIngrese el id del empleado u otro caracter para terminar la selección\nOpción: ");   
     } 
-    
     *pCantidadNomina = j;
-    //guardar nomina en base de datos
     return empleadosNomina;
 }
+
 
 bool enNomina(int cedula, struct Empleado *nomina, int j){
     int i = 0;
@@ -461,31 +433,44 @@ bool enNomina(int cedula, struct Empleado *nomina, int j){
     return false;
 }
 
-
-
 void generarFactura(){
     //obtener y mostrar productos
     struct Factura pFactura;
     int guardar = 0;
     int cantidadProductos = 0;
-    pFactura.productos= menuProductos(&guardar, &cantidadProductos);
+    struct Producto *pProductos =menuProductos(&guardar, &cantidadProductos);
+    pFactura.productos= pProductos;
 
     printf("\nvoy a imprimir\n");
     printf("\nquiere guardar?: %d", guardar);
     if(guardar){
         int i = 0;
-        printf("cantidad de productos: %d", cantidadProductos);
-        while(i<cantidadProductos){
-            pFactura.subtotal += pFactura.productos[i].costo;
-            pFactura.impuestosVenta += (pFactura.productos[i].costo*pFactura.productos[i].impAplicado)-pFactura.productos[i].costo;
-            pFactura.Total +=pFactura.productos[i].costo*pFactura.productos[i].impAplicado;
+        float subtotal =0;
+        float subtotalP = 0;
+        float impuesto = 0;
+        float impuestoP = 0;
+        
+        while(i<cantidadProductos){   
+            subtotalP = pFactura.productos[i].costo * pFactura.productos[i].cantidad;
+            impuestoP = (pFactura.productos[i].costo * pFactura.productos[i].cantidad*pFactura.productos[i].impAplicado/100);
+            subtotal = subtotal+ subtotalP;
+            impuesto = impuesto +impuestoP;
+
+            printf("\n cantidad: %d, subtotal: %f, impuestos: %f, total: %f",pFactura.productos[i].cantidad,subtotalP, impuestoP, subtotalP+impuestoP);
             i++;
         }
-
+        float total = subtotal + impuesto;
+        printf("\n\n\ngeneral\ncantidad: %d, subtotal: %f, impuestos: %f, total: %f",cantidadProductos,subtotal, impuesto, total);
+            
+        pFactura.subtotal = subtotal;
+        pFactura.impuestosVenta = impuesto;
+        pFactura.Total = total;
         getchar();
         printf("\nNombre del cliente:\t");
-        scanf(" %[^\n]", pFactura.nombreCliente);
+        char pNombreCliente[60];
+        scanf(" %[^\n]", pNombreCliente);
 
+        pFactura.nombreCliente = pNombreCliente;
         printf("\nDia(dd):\t");
         scanf("%d", &pFactura.dia);
 
@@ -521,8 +506,7 @@ void generarFactura(){
             if(opcion == 'y' || opcion == 'Y'){
                 int idFactura;
                 insertFactura(&pFactura,&idFactura, &valoresIniciales);
-                printf("sali");
-                printf("id de la factura: %d", idFactura);
+                pFactura.numeroFactura = idFactura;
                 freeMysql();
                 int i = 0;
                 while(i<cantidadProductos){
@@ -531,6 +515,8 @@ void generarFactura(){
                     i++;
 
                 }
+                imprimirDetalleFactura(&pFactura);
+                pausa();
             }
         }
 
@@ -547,53 +533,52 @@ struct Producto* menuProductos(int *guardar, int *cantidadProductos){
     struct Producto *productosFactura = NULL;
     int j = 0;//tamaño array
 
-
     char opcion;
         char repetir = 1;
         do{
         
-        printf("#####   Menú productos   #####\n\n");
-        printf("1)Agregar producto. \n");
-        printf("2)Eliminar producto\n");
-        printf("3)Guardar\n");
-        printf("4)Salir\n");
-        printf("#############################\n");
-        printf("Seleccione una opción:\t");
+            printf("#####   Menú productos   #####\n\n");
+            printf("1)Agregar producto. \n");
+            printf("2)Eliminar producto\n");
+            printf("3)Guardar\n");
+            printf("4)Salir\n");
+            printf("#############################\n");
+            printf("Seleccione una opción:\t");
 
-        scanf(" %c", &opcion);
-        switch (opcion)
-        {
-        case '1':  
-            productosFactura =agregarProducto(productosFactura, lProductos, pcantidadProductos, &j);
-            printf("\n\nsali de agregar: %d:\n\n", j);
-            break;
-        
-        case '2':
-            productosFactura =  eliminarProducto(productosFactura, &j);
-            break;
-        case '3':
-            *guardar = 1;
-            repetir =0;
-            break;
-        
-        case '4':
-            repetir = 0;
-            break;
-        
-        default:
-            break;
-        }
-
-        if(opcion =='1' || opcion =='2'){
-            imprimirProductos(lProductos, pcantidadProductos,0);       
-            printf ("\n\n##### Productos en factura #####");
-            int i = 0;
+            scanf(" %c", &opcion);
+            switch (opcion)
+            {
+            case '1':  
+                productosFactura =agregarProducto(productosFactura, lProductos, pcantidadProductos, &j);
+                printf("\n\nsali de agregar: %d:\n\n", j);
+                break;
             
-            imprimirProductos(productosFactura, j, 1);
-            printf("\n\n");
-        }         
+            case '2':
+                productosFactura =  eliminarProducto(productosFactura, &j);
+                break;
+            case '3':
+                *guardar = 1;
+                repetir =0;
+                break;
+            
+            case '4':
+                repetir = 0;
+                break;
+            
+            default:
+                break;
+            }
 
-    }while(repetir);
+            if(opcion =='1' || opcion =='2'){
+                system("clear");
+                imprimirProductos(lProductos, pcantidadProductos,0);       
+                printf ("\n\n##### Productos en factura #####");
+                int i = 0;
+                imprimirProductos(productosFactura, j, 1);
+                printf("\n\n");
+            }         
+
+        }while(repetir);
 
     *cantidadProductos = j;
 
@@ -699,13 +684,15 @@ bool enFactura(char *idProducto, struct Producto *factura, int j){
     return false;
 }
 
+
+
 void listarNominas(){
     system("clear");
-    getAllNominas();
+    getAllNominas();//solicitar nominas a la base de datos
 
     int i=0;
     int cantidadNominas = (int)mysql_num_rows(res);
-    struct Nomina *lNominas =malloc(sizeof(struct Nomina)*cantidadNominas);
+    struct Nomina *lNominas =malloc(sizeof(struct Nomina)*cantidadNominas);//transformar respuesta a array
     while ((row = mysql_fetch_row(res)) != NULL){
         lNominas[i].mes = atoi(row[1]);
         lNominas[i].anio = atoi(row[2]);
@@ -713,8 +700,10 @@ void listarNominas(){
         lNominas[i].total = atof(row[4]);
         i++;
     }
-    imprimirNominas(lNominas, cantidadNominas);
     freeMysql();
+    imprimirNominas(lNominas, cantidadNominas);
+
+
     int num = -1;
     printf("\nIngrese el id de la nomina para ver su detalle u otro caracter para terminar la selección\nOpción: ");
     while (scanf("%d", &num)==1){
@@ -752,6 +741,94 @@ void listarNominas(){
     return;
 }
 
+
+void listarFacturas(){
+    system("clear");
+    printf("\nlistar ventas");
+    getAllFacturas();//solicitar facturas a la base de datos
+
+    int i=0;
+    int cantidadFacturas = (int)mysql_num_rows(res);
+    printf("\nobtuve %d resultados\n", cantidadFacturas);
+    struct Factura *lFacturas =malloc(sizeof(struct Factura)*cantidadFacturas);//transformar respuesta a array
+    while ((row = mysql_fetch_row(res)) != NULL){
+        //printf("\n\n%s,%s,%s,%s,%s,%s,%s,%s,",row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7]);
+        char *fecha = row[4];
+        char *anio = strtok(fecha,"-");
+        char *mes = strtok(NULL,"-");
+        char *dia = strtok(NULL,"-");
+
+        lFacturas[i].numeroFactura = atoi(row[0]);
+        lFacturas[i].anio = atoi(anio);
+        lFacturas[i].mes =atoi(mes);
+        lFacturas[i].dia = atoi(dia);
+        lFacturas[i].nombreCliente = row[5];
+        lFacturas[i].subtotal = atof(row[6]);
+        lFacturas[i].impuestosVenta = atof(row[7]);
+        lFacturas[i].Total = atof(row[8]);
+        i++;
+    }
+    freeMysql();
+    imprimirFacturas(lFacturas, cantidadFacturas);
+
+    int num = -1;
+    printf("\nIngrese el id de la factura para ver su detalle u otro caracter para terminar la selección\nOpción: ");
+    while (scanf("%d", &num)==1){
+        if(num < cantidadFacturas){
+            imprimirDetalleFactura(&lFacturas[num]);
+            freeMysql();
+            imprimirFacturas(lFacturas, cantidadFacturas);
+        }else{
+            printf("\nEsta factura no existe\n");
+        }
+        printf("\nIngrese el id de la factura para ver su detalle u otro caracter para terminar la selección\nOpción: ");
+            
+    }
+    freeMysql();
+    pausa();
+    return;
+}
+
+void imprimirDetalleFactura(struct Factura *pFactura){
+    system("clear");
+    printf("\n##### Detalle de la factura #####"); 
+
+    printf("\nn.Factura: %d", pFactura->numeroFactura);
+    printf("\nNombre del comercio: %s", valoresIniciales.nombreComercio);
+    printf("\nCed.Jurídica: %d", valoresIniciales.cedulaJuridica);
+    printf("\nNúmero de teléfono: %d", valoresIniciales.telefono);
+    printf("\nFecha: %d/%d/%d", pFactura->anio, pFactura->mes, pFactura->dia);
+    printf("\nNombre del cliente: %s", pFactura->nombreCliente);
+    printf("\nDetalle\n------------------------------------------");
+
+    int cantProductos = getProductosByFactura(pFactura->numeroFactura);
+    int j=0;
+    struct Producto *lProductos =malloc(sizeof(struct Producto)*(int)mysql_num_rows(res));
+   
+    
+    while ((row = mysql_fetch_row(res)) != NULL)
+    {
+        lProductos[j].idProducto = row[0];
+        lProductos[j].nombre = row[1];
+        lProductos[j].cantidad = atoi(row[7]);
+        lProductos[j].impAplicado = atof(row[3]);
+        lProductos[j].costo = atof(row[2]);
+        j++;
+    }
+    imprimirProductos(lProductos, cantProductos, 1);
+
+    printf("\n---------------------------------------------------------------------\n");
+    freeMysql();
+    printf("\nSubtotal: %f", pFactura->subtotal);
+    printf("\nIV: %f", pFactura->impuestosVenta);
+    printf("\nTotal: %f", pFactura->Total);
+    pausa();
+
+    return;
+}
+
+
+
 void imprimirAreas(struct Area *lAreas, int cantidad){
     int i = 0;
     printf("\n\tId Area\t\tNombre\t\tDimensión\t\tProducto principal producido\n");;
@@ -786,6 +863,17 @@ void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad){
     }          
 }
 
+
+void imprimirFacturas(struct Factura *lFacturas, int cantidad){
+    int i = 0;
+    printf("##### Facturas #####\n\nNumero\t\tFecha\t\tSubtotal\tTotal\n");
+    while (i<cantidad)
+    {
+        printf("%d.\t%d\t\t%d-%d-%d\t\t%f\t%f\n",i,lFacturas[i].numeroFactura, lFacturas[i].anio, lFacturas[i].mes, lFacturas[i].dia,lFacturas[i].subtotal, lFacturas[i].Total);
+        i++;
+    }
+    return;
+}
 void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCant){
     int i = 0;
     printf("\n\n\tId Producto \tNombre \t\tCosto \t\tImpuesto aplicado ");
@@ -826,10 +914,6 @@ bool esNumero(char *token){
     if(atoi(token) || atof(token)){
         return true;
     }
-    /*for(int i = 0 ; token[i]!='\0';i++){
-        if(!isdigit(token[i])){res = false;}
-    }*/
-
     return false;
 }
 void pausa(){
