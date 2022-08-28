@@ -113,7 +113,8 @@ void  menuOperativo(){
         
         case '2':
             printf("listar areas");
-            listarAreas(0);
+            int x ;
+            listarAreas(&x);
             break;
         
         case '3':
@@ -154,10 +155,11 @@ void  menuAdministrativo(){
         printf("2.Registro ventas. \n");
         printf("3.Consulta de nomina.\n");//////////////////////
         printf("4.Consulta de ventas.\n");
-        printf("5.Volver al menú principal.\n");
-        printf("6.Salir.\n");
+        printf("5.Consulta Balance anual\n");
+        printf("6.Volver al menú principal.\n");
+        printf("7.Salir.\n");
         printf("#############################\n");
-        printf("Seleccione una opcion del 1 al 6:\t");
+        printf("Seleccione una opcion del 1 al 7:\t");
 
         scanf(" %c", &opcion);
         switch (opcion)
@@ -182,11 +184,14 @@ void  menuAdministrativo(){
             printf("Consulta de ventas");
             listarFacturas();
             break;
-
         case '5':
-            repetir = 0;
+            printf("Consulta balance anual");
+            listarBalances();
             break;
         case '6':
+            repetir = 0;
+            break;
+        case '7':
             printf("saliendo......\n");
             salir();
         default:
@@ -694,6 +699,7 @@ void listarNominas(){
     int cantidadNominas = (int)mysql_num_rows(res);
     struct Nomina *lNominas =malloc(sizeof(struct Nomina)*cantidadNominas);//transformar respuesta a array
     while ((row = mysql_fetch_row(res)) != NULL){
+        lNominas[i].idNomina=atoi(row[0]);
         lNominas[i].mes = atoi(row[1]);
         lNominas[i].anio = atoi(row[2]);
         lNominas[i].subtotal = atof(row[3]);
@@ -712,7 +718,8 @@ void listarNominas(){
             printf("\n##### Detalle de la nomina #####");
             printf("\nAño: \t%d\nMes: \t%d\nSubtotal: \t%f\nTotal: \t%f",
                     lNominas[num].anio, lNominas[num].mes,lNominas[num].subtotal, lNominas[num].total);
-            int cantEmpleados = getEmpleadosByNomina(num);
+            printf("\n\nid de la nomina : %d", lNominas[num].idNomina);
+            int cantEmpleados = getEmpleadosByNomina(lNominas[num].idNomina);
             int j=0;
             struct Empleado *lEmpleados =malloc(sizeof(struct Empleado)*(int)mysql_num_rows(res));
             while ((row = mysql_fetch_row(res)) != NULL)
@@ -725,6 +732,8 @@ void listarNominas(){
                 lEmpleados[j].salarioMensual = atof(row[5]);
                 j++;
             }
+
+            
             imprimirEmpleados(lEmpleados, cantEmpleados);
             printf("\n#########################################################\n");
             freeMysql();
@@ -843,10 +852,10 @@ void imprimirAreas(struct Area *lAreas, int cantidad){
 
 void imprimirNominas(struct Nomina *lNominas, int cantidad){
     int i = 0;
-    printf("##### Nominas #####\n\n\tMes\t\tAño\t\tSubtotal\tTotal\n");
+    printf("'\n##### Nominas #####\n\n\tMes\t\tAño\t\tSubtotal\tTotal\n");
     while (i<cantidad)
     {
-        printf("%d.\t%d\t\t%d\t\t%f\t%f\n",i,lNominas[i].mes, lNominas[i].anio, lNominas[i].subtotal, lNominas[i].total);
+        printf("[%d].\t%d\t\t%d\t\t%d\t\t%f\t%f\n",i,lNominas[i].idNomina,lNominas[i].mes, lNominas[i].anio, lNominas[i].subtotal, lNominas[i].total);
         i++;
     }
     return;
@@ -874,6 +883,7 @@ void imprimirFacturas(struct Factura *lFacturas, int cantidad){
     }
     return;
 }
+
 void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCant){
     int i = 0;
     printf("\n\n\tId Producto \tNombre \t\tCosto \t\tImpuesto aplicado ");
@@ -891,6 +901,87 @@ void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCan
         i++;
     }          
 }
+
+
+void listarBalances(){
+    system("clear");
+    getBalanceAnual();
+
+    int i=0;
+    int cantidadBalances = (int)mysql_num_rows(res);
+    struct Balance *lBalances =malloc(sizeof(struct Balance)*cantidadBalances);//transformar respuesta a array
+    while ((row = mysql_fetch_row(res)) != NULL){
+        lBalances[i].anio=atoi(row[0]);
+        lBalances[i].totalNominas = atoi(row[1]);
+        lBalances[i].subtotalFacturas = atoi(row[2]);
+        lBalances[i].IVFacturas = atof(row[3]);
+        lBalances[i].Balance = atof(row[4]);
+        i++;
+    }
+    freeMysql();
+    imprimirBalances(lBalances, cantidadBalances,0);
+
+    int num = -1;
+    printf("\nIngrese el id del para ver su detalle mensual u otro caracter para terminar la selección\nOpción: ");
+    while (scanf("%d", &num)==1){
+        if(num < cantidadBalances){
+            system("clear");
+            printf("\n##### Detalle mesual##### %d",lBalances[num].anio);
+            /*printf("\nAño: \t%d\nMes: \t%d\nSubtotal: \t%f\nTotal: \t%f",
+                    lNominas[num].anio, lNominas[num].mes,lNominas[num].subtotal, lNominas[num].total);
+            printf("\n\nid de la nomina : %d", lNominas[num].idNomina);*/
+            int cantMeses = getBalanceMensual(lBalances[num].anio);
+            int j=0;
+            struct Balance *lBalancesMes =malloc(sizeof(struct Balance)*(int)mysql_num_rows(res));
+            while ((row = mysql_fetch_row(res)) != NULL)
+            {
+                lBalancesMes[i].mes=atoi(row[0]);
+                lBalancesMes[i].anio = atoi(row[1]);
+                lBalancesMes[i].totalNominas = atoi(row[2]);
+                lBalancesMes[i].subtotalFacturas = atof(row[3]);
+                lBalancesMes[i].IVFacturas = atof(row[4]);
+                lBalancesMes[i].Balance = atof(row[5]);
+                j++;
+            }
+
+            
+            imprimirBalances(lBalancesMes, cantMeses,1);
+            printf("\n#########################################################\n");
+            freeMysql();
+            pausa();
+            imprimirBalances(lBalances, cantidadBalances,0);
+        }else{
+            printf("\nEste año no tiene detalles\n");
+        }
+        printf("\nIngrese el id del para ver su detalle mensual u otro caracter para terminar la selección\nOpción: ");
+        
+    }
+    freeMysql();
+    pausa();
+    return;
+}
+
+void imprimirBalances(struct Balance *lBalances, int cantidad,int imprimirMes){
+    int i = 0;
+    printf("'\n##### Balance por año #####\n\n");
+    if(imprimirMes){
+        printf("\tMes\t");
+    }
+    printf("\tAño\t\ttotal nomina\t\tSubtotal\tIV Factura\t\tBalance\n");
+    while (i<cantidad)
+    {
+
+        printf("[%d].\t",i);
+        if(imprimirMes){
+            printf("%d\t\t",lBalances[i].mes);
+        }
+        printf("%d\t\t%f\t\t%f\t%f\t%f\n",lBalances[i].anio, lBalances[i].totalNominas, 
+        lBalances[i].subtotalFacturas, lBalances[i].IVFacturas,  lBalances[i].Balance);
+        i++;
+    }
+    return;
+}
+
 
 
 int getNum(char *mesanio){

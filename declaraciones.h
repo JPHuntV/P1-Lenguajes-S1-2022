@@ -31,6 +31,8 @@ void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad);
 void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCantidad);
 void imprimirAreas(struct Area *lAreas, int cantidad);
 void imprimirFacturas(struct Factura *lFacturas, int cantidad);
+void listarBalances();
+void imprimirBalances(struct Balance *lBalances, int cantidad,int imprimirMes);
 int getNum(char* mesanio);
 bool esNumero(char *token);
 void pausa();

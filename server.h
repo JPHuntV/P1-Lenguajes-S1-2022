@@ -164,6 +164,31 @@ int getAllProductos(){
 }
 
 
+
+int getBalanceAnual(){
+    char *query = "call getBalanceAnual()";
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n", mysql_error(conn));
+    }
+    res = mysql_store_result(conn);
+    
+    
+    return (int)mysql_num_rows(res);
+}
+
+int getBalanceMensual(int anio){
+    char query[2000];
+    sprintf(query, "call getBalanceMensual('%d')",anio);
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n", mysql_error(conn));
+    }
+    res = mysql_store_result(conn);
+    
+    
+    return (int)mysql_num_rows(res);
+}
 int getProductosByFactura(int factura){
     char query[2000];
     sprintf(query, "call getProductosByFactura('%d')",factura);

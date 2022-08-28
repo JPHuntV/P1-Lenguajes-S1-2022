@@ -36,6 +36,7 @@ struct Empleado
 };
 struct Nomina
 {
+    int idNomina;
     int mes;
     int anio;
     struct Empleado *empleados;
@@ -64,6 +65,17 @@ struct Factura
     float impuestosVenta;
     float Total;
 
+};
+
+
+struct Balance
+{
+    int mes;
+    int anio;
+    float totalNominas;
+    float subtotalFacturas;
+    float IVFacturas;
+    float Balance;
 };
 
 #endif
