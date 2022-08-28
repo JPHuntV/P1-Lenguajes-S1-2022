@@ -136,6 +136,21 @@ int getAllNominas(){
     return (int)mysql_num_rows(res);
 }
 
+
+int getAllFacturas(){
+    printf("\nbase de datos factuaras\n");
+    char *query = "call getAllFacturas()";
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n", mysql_error(conn));
+    }
+    res = mysql_store_result(conn);
+    
+    
+    return (int)mysql_num_rows(res);
+}
+
+
 int getAllProductos(){
     char *query = "call getAllProductos()";
     if(mysql_query(conn, query))
@@ -147,6 +162,19 @@ int getAllProductos(){
     
     return (int)mysql_num_rows(res);
 }
+
+
+int getProductosByFactura(int factura){
+    char query[2000];
+    sprintf(query, "call getProductosByFactura('%d')",factura);
+    if(mysql_query(conn, query))
+    {
+        fprintf(stderr, "%s\n", mysql_error(conn));
+    }
+    res = mysql_store_result(conn);
+    return (int)mysql_num_rows(res);
+}
+
 
 int getEmpleadosByNomina(int nomina){
     char query[2000];
