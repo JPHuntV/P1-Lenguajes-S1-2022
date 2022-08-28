@@ -53,7 +53,6 @@ create table Nominas
     total float not null
 );
 
-
 create table EmpleadoXNomina
 (
 	idEmpleadoXNomina int primary key auto_increment,
@@ -77,8 +76,8 @@ create table Factura
     
 );
 
-
 create table ProductoXFactura(
+
 	idProductoXFactura int primary key auto_increment,
     idProducto varchar(10),
     numeroFactura int, 
@@ -86,6 +85,8 @@ create table ProductoXFactura(
     foreign key (idProducto) references Productos(idProducto),
     foreign key (numeroFactura) references Factura(numeroFactura)
 );
+
+
 DROP procedure IF EXISTS `insertProducto`;
 
 DELIMITER $$
@@ -98,6 +99,8 @@ END$$
 
 DELIMITER ;
 
+
+
 DROP procedure IF EXISTS `insertArea`;
 
 DELIMITER $$
@@ -109,6 +112,8 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
 
 DROP procedure IF EXISTS `insertEmpleado`;
 
@@ -123,6 +128,8 @@ END$$
 
 DELIMITER ;
 
+
+
 DROP procedure IF EXISTS `insertNomina`;
 
 DELIMITER $$
@@ -136,6 +143,8 @@ END$$
 
 DELIMITER ;
 
+
+
 DROP procedure IF EXISTS `insertEmpleadoXNomina`;
 
 DELIMITER $$
@@ -147,6 +156,8 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
 
 DROP procedure IF EXISTS `insertFactura`;
 
@@ -164,6 +175,8 @@ END$$
 DELIMITER ;
 
 
+
+
 DROP procedure IF EXISTS `insertProductoXFactura`;
 
 DELIMITER $$
@@ -176,6 +189,9 @@ END$$
 
 DELIMITER ;
 
+
+
+
 DROP procedure IF EXISTS `getAllAreas`;
 
 DELIMITER $$
@@ -186,6 +202,9 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+
 
 DROP procedure IF EXISTS `getUserByUsuario`;
 
@@ -199,6 +218,9 @@ END$$
 
 DELIMITER ;
 
+
+
+
 DROP procedure IF EXISTS `getAllEmpleados`;
 
 DELIMITER $$
@@ -209,6 +231,8 @@ BEGIN
 END$$
 
 
+
+DELIMITER ;
 DROP procedure IF EXISTS `getValoresIniciales`;
 
 DELIMITER $$
@@ -218,8 +242,9 @@ BEGIN
 		select * from ValoresIniciales;
 END$$
 
-
 DELIMITER ;
+
+
 
 DROP procedure IF EXISTS `getAllNominas`;
 
@@ -233,6 +258,17 @@ END$$
 DELIMITER ;
 
 
+DROP procedure IF EXISTS `getAllFacturas`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `getAllFacturas` ()
+BEGIN
+		select * from Facturas;
+END$$
+
+DELIMITER ;
+
 DROP procedure IF EXISTS `getAllProductos`;
 
 DELIMITER $$
@@ -243,6 +279,7 @@ BEGIN
 END$$
 
 DELIMITER ;
+
 
 
 
@@ -258,6 +295,22 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+DROP procedure IF EXISTS `getProductosByFactura`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `getProductosByFactura` (in pIdFactura int)
+BEGIN
+		select * from Productos p
+        inner join ProductoXFactura pf on p.idProducto = pf.idProducto
+        where pf.numeroFactura = pIdFactura ;
+END$$
+
+DELIMITER ;
+
+
 
 
 /************DDL
