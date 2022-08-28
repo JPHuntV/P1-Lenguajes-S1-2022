@@ -52,9 +52,10 @@ struct Area
 
 
 struct Factura
-{
+{   
+    int numeroFactura;
     struct Producto *productos;
-    char nombreCliente[60];
+    char *nombreCliente;
     int dia;
     int mes;
     int anio;
