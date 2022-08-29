@@ -802,19 +802,17 @@ struct Producto* listarProductos(int *pCantidadProductos){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:enFactura
+ * E:id de un producto y la lista de productos en el carrito
+ * S:true si el producto está en el carrito , false si no 
+ * R:no tiene
+ * O:recibe el id de un producto y verifica si este está o no en el carrito
  * ***************************/
 bool enFactura(char *idProducto, struct Producto *factura, int j){
     int i = 0;
     while (i<j)
     {
-        //printf("\n%d", nomina[i].cedula);
         if(idProducto == factura[i].idProducto){
-            //printf("ya existe");
             return true;
         }
         i++;
@@ -826,11 +824,11 @@ bool enFactura(char *idProducto, struct Producto *factura, int j){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:listarNominas
+ * E:arreglo de nominas desde la base de datos
+ * S:arreglo con las nominas obtenidas
+ * R:conexión a la base de datos
+ * O:solicita la lista de nominas a la base de datos y retorna un arreglo de struct tipo nomina
  * ***************************/
 void listarNominas(){
     system("clear");
@@ -894,11 +892,12 @@ void listarNominas(){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:listarFacturas
+ * E:arreglo de facturas desde la base de datos
+ * S:arreglo con las facturas obtenidas
+ * R:conexión a la base de datos
+ * O:solicita la lista de facturas y sus productos, retorna un arregl de struct tipo producto e imprime su
+ * detalle
  * ***************************/
 void listarFacturas(){
     system("clear");
@@ -910,7 +909,6 @@ void listarFacturas(){
     printf("\nobtuve %d resultados\n", cantidadFacturas);
     struct Factura *lFacturas =malloc(sizeof(struct Factura)*cantidadFacturas);//transformar respuesta a array
     while ((row = mysql_fetch_row(res)) != NULL){
-        //printf("\n\n%s,%s,%s,%s,%s,%s,%s,%s,",row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7]);
         char *fecha = row[4];
         char *anio = strtok(fecha,"-");
         char *mes = strtok(NULL,"-");
@@ -929,6 +927,7 @@ void listarFacturas(){
     freeMysql();
     imprimirFacturas(lFacturas, cantidadFacturas);
 
+    //solica el id de de una factura, luego imprime su detalle 
     int num = -1;
     printf("\nIngrese el id de la factura para ver su detalle u otro caracter para terminar la selección\nOpción: ");
     while (scanf("%d", &num)==1){
@@ -950,11 +949,11 @@ void listarFacturas(){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:imprimirDetalleFactura
+ * E:struct factura que se quiere imprimir
+ * S:impresión en consola de los detalles
+ * R:recibir una factura
+ * O:Recibe un struct factura e imprime sus detalles en consola
  * ***************************/
 void imprimirDetalleFactura(struct Factura *pFactura){
     system("clear");
@@ -968,11 +967,10 @@ void imprimirDetalleFactura(struct Factura *pFactura){
     printf("\nNombre del cliente: %s", pFactura->nombreCliente);
     printf("\nDetalle\n------------------------------------------");
 
-    int cantProductos = getProductosByFactura(pFactura->numeroFactura);
+    int cantProductos = getProductosByFactura(pFactura->numeroFactura);//solicita todos los producto de la factura
     int j=0;
     struct Producto *lProductos =malloc(sizeof(struct Producto)*(int)mysql_num_rows(res));
    
-    
     while ((row = mysql_fetch_row(res)) != NULL)
     {
         lProductos[j].idProducto = row[0];
@@ -997,11 +995,11 @@ void imprimirDetalleFactura(struct Factura *pFactura){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:imprimirAreas
+ * E:lista de areas a imprimir y cantidad de elementos en arreglo
+ * S:impresión en consola de el arreglo de areas
+ * R:ninguna
+ * O:Imprime un arreglo de struct area
  * ***************************/
 void imprimirAreas(struct Area *lAreas, int cantidad){
     int i = 0;
@@ -1017,11 +1015,11 @@ void imprimirAreas(struct Area *lAreas, int cantidad){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:imprimirNominas
+ * E:arreglo de nominas y cantidad de elementos
+ * S:imprime en consola el arreglo
+ * R:ninguna
+ * O:recibe una lista de nominas e imprime su detalle
  * ***************************/
 void imprimirNominas(struct Nomina *lNominas, int cantidad){
     int i = 0;
@@ -1037,11 +1035,11 @@ void imprimirNominas(struct Nomina *lNominas, int cantidad){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre: imprimirEmpleados
+ * E:lista de empleados y cantidad de elementos
+ * S:imprime el arreglo en consola
+ * R:ninguna
+ * O:Recibe un arreglo de empleados e imprime su detalle en consola
  * ***************************/
 void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad){
     int i = 0;
@@ -1057,11 +1055,11 @@ void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:imprimirFacturas
+ * E:lista de facturas y cantidad de elementos
+ * S:imprime la lista de facturas en consola
+ * R:ninguna
+ * O:recibe un arreglo de facturas e imprime su detalle
  * ***************************/
 void imprimirFacturas(struct Factura *lFacturas, int cantidad){
     int i = 0;
@@ -1077,11 +1075,11 @@ void imprimirFacturas(struct Factura *lFacturas, int cantidad){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:imprimirProductos
+ * E:lista de productos , cantidad de elementos y una bandera(imprimir cantidad de ese producto)
+ * S:imprime en consola los detalles del arreglo
+ * R:ninguna
+ * O:recibe un arreglo de producto e imprime sus elementos en consola
  * ***************************/
 void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCant){
     int i = 0;
@@ -1104,15 +1102,15 @@ void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCan
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:listarBalances
+ * E:arreglo de balances solicitados a la base de datos
+ * S:detalles de los balances en consola
+ * R:conexión a la base de datos
+ * O:Solicita los balances a la base de datos y los imprime en consola
  * ***************************/
 void listarBalances(){
     system("clear");
-    getBalanceAnual();
+    getBalanceAnual();//solicita los balances divididos por año
 
     int i=0;
     int cantidadBalances = (int)mysql_num_rows(res);
@@ -1126,7 +1124,7 @@ void listarBalances(){
         i++;
     }
     freeMysql();
-    imprimirBalances(lBalances, cantidadBalances,0);
+    imprimirBalances(lBalances, cantidadBalances,0);//imprime el arreglo de balances recibidos
 
     int num = -1;
     printf("\nIngrese el id del para ver su detalle mensual u otro caracter para terminar la selección\nOpción: ");
@@ -1134,12 +1132,9 @@ void listarBalances(){
         if(num < cantidadBalances){
             system("clear");
             printf("\n##### Detalle mesual##### %d",lBalances[num].anio);
-            /*printf("\nAño: \t%d\nMes: \t%d\nSubtotal: \t%f\nTotal: \t%f",
-                    lNominas[num].anio, lNominas[num].mes,lNominas[num].subtotal, lNominas[num].total);
-            printf("\n\nid de la nomina : %d", lNominas[num].idNomina);*/
-            int cantMeses = getBalanceMensual(lBalances[num].anio);
+            int cantMeses = getBalanceMensual(lBalances[num].anio); //solicita los balances de una año divididos por mes
             int j=0;
-            struct Balance *lBalancesMes =malloc(sizeof(struct Balance)*(int)mysql_num_rows(res));
+            struct Balance *lBalancesMes =malloc(sizeof(struct Balance)*(int)mysql_num_rows(res));//crea un struct con los balances recibidos
             while ((row = mysql_fetch_row(res)) != NULL)
             {
                 lBalancesMes[i].mes=atoi(row[0]);
@@ -1150,9 +1145,8 @@ void listarBalances(){
                 lBalancesMes[i].Balance = atof(row[5]);
                 j++;
             }
-
-            
-            imprimirBalances(lBalancesMes, cantMeses,1);
+ 
+            imprimirBalances(lBalancesMes, cantMeses,1); //solicita impresión de balances mensuales
             printf("\n#########################################################\n");
             freeMysql();
             pausa();
@@ -1171,11 +1165,11 @@ void listarBalances(){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:imprimirBalances
+ * E:lista de balances(anuales o mensuales), cantidad de elementos y bandera(mes 1/año 0)
+ * S:imprime en consola la lista de balances
+ * R:ninguna
+ * O:Recibe una arreglo de balances  y los imprime en consola
  * ***************************/
 void imprimirBalances(struct Balance *lBalances, int cantidad,int imprimirMes){
     int i = 0;
@@ -1201,11 +1195,11 @@ void imprimirBalances(struct Balance *lBalances, int cantidad,int imprimirMes){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:getNum
+ * E:Bandera que indica el dato solicitado
+ * S:numero ingresado por el usuario 
+ * R:se debe ingresar un numero 
+ * O:Solicita un numero al usuario y lo retorna
  * ***************************/
 int getNum(char *mesanio){
     int num;
@@ -1221,11 +1215,11 @@ int getNum(char *mesanio){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:esNumero
+ * E:char *  a evaluar
+ * S:true si es numero, false si no 
+ * R:ninguna
+ * O:Verifica si un valor es un numero o no 
  * ***************************/
 bool esNumero(char *token){
     bool res = true;
@@ -1242,11 +1236,11 @@ bool esNumero(char *token){
 
 
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:pausa
+ * E:ninguna
+ * S:pausa en consola
+ * R:ninguna
+ * O:Pausa la impresión en consola hasta que se presione la tecla enter
  * ***************************/
 void pausa(){
     getchar();
@@ -1258,13 +1252,12 @@ void pausa(){
 
 
 
-
 /*****************************
- * Nombre:
- * E:
- * S:
- * R:
- * O:
+ * Nombre:salir
+ * E:ningua
+ * S:Cierra el programa
+ * R:ninguna
+ * O:Cancela la ejecución del programa
  * ***************************/
 void salir(){
     exit(0);

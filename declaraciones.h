@@ -1,22 +1,20 @@
 #ifndef declaraciones
 #define declaraciones
 
-void menuPrincipal();
 
+//declaración de las funciones de main.c
+void menuPrincipal();
 bool solicitarUsuario();
 void menuOperativo();
 void menuAdministrativo();
-
 int cantEmpleados = 0;
 void leerArchivo();
-
 struct Area* listarAreas();
 struct Empleado* listarEmpleados();
 struct ValoresIniciales cargarValoresIniciales();
 void generarNomina();
 struct Empleado* agregarEmpleados(int *pCantidadNomina);
 bool enNomina(int cedula, struct Empleado *nomina, int j);
-
 void generarFactura();
 struct Producto* menuProductos();
 struct Producto* agregarProducto(struct Producto *productosFactura,struct Producto *lProductos, int pcantidadProductos, int *j);

@@ -1,6 +1,6 @@
 #ifndef structs
 #define structs
-
+//Estructuras representativas de la base de datos gestionAgricola
 struct Producto
 {
     char *idProducto;
