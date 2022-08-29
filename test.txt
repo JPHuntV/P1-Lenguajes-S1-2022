@@ -1,7 +1,13 @@
-D1,Papaya,550,1.5
-D2,Manzana,100,0.5
-F3,Culantro,300,1.0
-G4,Bolsa de Arroz,1250,2.1
-H4,Bolsa de frijoles,1125,1.9
-H5,Coca cola,750.50,1.2
-U5,Pepsi,600,1.1
+D1,Papa Kg,2900,1.5
+D2,Platano,150,0.5
+F3,Yuca Kg,600,1.0
+G4,Mango Kg,1250,2.1
+H4,Banano,50,0.1
+H5,Camote Kg,750.50,1.2
+U5,Fresas caja,2000,1.1
+U6,Huevos,100,0.2
+B7,Carne Kg,3200,2.1
+C2,Caña,600,1.1
+
+
+
