@@ -27,7 +27,7 @@ int conectarServidor(){
     if(!mysql_real_connect(conn, sqlServer, user, password, database, 0, NULL, 0)){
         fprintf(stderr, "%s\n", mysql_error(conn));
     }else{
-        printf("\nconexion establecida \n");
+        printf("\nConexin establecida \n");
     }
 }
 
@@ -89,7 +89,7 @@ void insertEmpleadoXNomina(int cedula, int pIdNomina, int pCantidadNomina){
     {
         fprintf(stderr, "%s\n\n", mysql_error(conn));
     }else{
-        printf("\nEl empleado se ha insertado correctamente!\n");
+        printf("\nEl empleado %d se ha añadido a la nomina correctamente!\n", cedula);
         res = mysql_use_result(conn);
     }
     return;
@@ -269,8 +269,9 @@ int getBalanceAnual(){
  * O:Solicita la creacion de una tabla con los balances mensuales según el año indicado
  * ***************************/
 int getBalanceMensual(int anio){
+    printf("\nani: %d", anio);
     char query[2000];
-    sprintf(query, "call getBalanceMensual('%d')",anio);
+    sprintf(query, "call getBalanceMensual(%d)",anio);
     if(mysql_query(conn, query))
     {
         fprintf(stderr, "%s\n", mysql_error(conn));
