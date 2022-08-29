@@ -27,7 +27,7 @@ int conectarServidor(){
     if(!mysql_real_connect(conn, sqlServer, user, password, database, 0, NULL, 0)){
         fprintf(stderr, "%s\n", mysql_error(conn));
     }else{
-        printf("\nConexin establecida \n");
+        printf("\nConexión establecida \n");
     }
 }
 
@@ -269,7 +269,6 @@ int getBalanceAnual(){
  * O:Solicita la creacion de una tabla con los balances mensuales según el año indicado
  * ***************************/
 int getBalanceMensual(int anio){
-    printf("\nani: %d", anio);
     char query[2000];
     sprintf(query, "call getBalanceMensual(%d)",anio);
     if(mysql_query(conn, query))

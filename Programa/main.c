@@ -1133,11 +1133,10 @@ void listarBalances(){
     while (scanf("%d", &num)==1){
         if(num < cantidadBalances){
             system("clear");
-            printf("\n##### Detalle mesual##### %d",lBalances[num].anio);
+            printf("\n##### Detalle mesual#####\nAño: %d",lBalances[num].anio);
             getBalanceMensual(lBalances[num].anio); //solicita los balances de una año divididos por mes
             int cantMeses = (int)mysql_num_rows(res);
             int j=0;
-            printf("cantidad meses : %d", cantMeses);
             struct Balance *lBalancesMes =malloc(sizeof(struct Balance)*cantMeses);//crea un struct con los balances recibidos
             while ((row = mysql_fetch_row(res)) != NULL)
             {
