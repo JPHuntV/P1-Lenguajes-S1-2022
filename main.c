@@ -14,6 +14,13 @@ struct ValoresIniciales valoresIniciales;
 
 void transformarArchivo(FILE *archivo);
 
+/*****************************
+ * Nombre: main
+ * E:ninguna
+ * S:Ejecución del programa
+ * R:Conexión a la red para establecer conexión con el servidor de base de datos
+ * O:Conectarse a la base de datos y dar inicio a la ejecución del programa
+ * ***************************/
 int main(){
     system("clear");
     conectarServidor();
@@ -22,11 +29,16 @@ int main(){
     return 0;
 }
 
+/*****************************
+ * Nombre: menuPrincipal
+ * E:ninguna
+ * S:menu principal en consola
+ * R:Elgir una opción disponible
+ * O:Mostrar al usuario un menu y redireccionarlo al menu de la opción que elija
+ * ***************************/
 void menuPrincipal(){
     char opcion;
     char repetir = 1;
-    
-    //printf("Cantidad de empleados: %d", CANT_EMP);
     do{
         
         printf("\n#####  Menú principal  #####\n\n");
@@ -35,20 +47,18 @@ void menuPrincipal(){
         printf("3.Salir.\n");
         printf("#############################\n");
         printf("Seleccione una opcion del 1 al 3:\t");
-
         scanf(" %c", &opcion);
         switch (opcion)
         {
         case '1':
-            if(solicitarUsuario()){
-                printf("correcto");
+            if(solicitarUsuario()){//Verifica que el usuario exista en la base de datos
+                printf("Sesión iniciada");
                 menuOperativo();
             }else{
                 printf("\n-----El usuario o contraseña ingresados son incorrectos.-----\n");
                 pausa();
             }
             break;
-        
         case '2':
             menuAdministrativo();
             break;
@@ -61,13 +71,21 @@ void menuPrincipal(){
             break;
         }
     }while(repetir);
-    printf("saliendo......\n");
+    printf("Saliendo......\n");
     salir();
     return;
 }
 
+
+/*****************************
+ * Nombre: solicitarUsuario
+ * E:Entrada de usuario : nombre de usuario y contraseña
+ * S:true si el usuario existe en la base de datos, false si no 
+ * R:Debe existir conexión con el servidor de base de datos
+ * O:Verificar que el usuario ingresado exista en la base de datos
+ * ***************************/
 bool solicitarUsuario(){
-    
+    system("clear");
     char pUsuario[200];
     printf("Por favor ingrese su nombre de usuario y contraseña\n\nUsuario:\t");
     scanf("%s",pUsuario);
@@ -81,13 +99,21 @@ bool solicitarUsuario(){
     struct Usuario usuario = {pUsuario,pClave};
     getUsuario(&usuario);
     row = mysql_fetch_row(res);
-    /*if(row==NULL){
+    if(row==NULL){
         printf("\n-----El usuario o contraseña ingresados son incorrectos.-----\n");
-    }*/
+    }
     freeMysql();
     return row!= NULL;
 }
 
+
+/*****************************
+ * Nombre:menuOperativo
+ * E:entrada de usuario:opcion
+ * S:llamada a la funcionalidad seleccionada
+ * R:debe ingresar usuario y contraseña previamente
+ * O:Despliega una lista de opciones (funcionalidades) para que el usuario seleccione
+ * ***************************/
 void  menuOperativo(){
     system("clear");
     char opcion;
@@ -138,22 +164,27 @@ void  menuOperativo(){
     return;
 }
 
+
+/*****************************
+ * Nombre:menuAdministrativo
+ * E:entrada de usuario:opcion
+ * S:llamada a la funcionalidad seleccionada
+ * R:ninguna
+ * O:Despliega una lista de opciones (funcionalidades) para que el usuario seleccione
+ * ***************************/
 void  menuAdministrativo(){
-
-
     system("clear");
     char opcion;
     char repetir = 1;
-    
+    //obtener siguiente numero factura
     printf("\n-----Valores iniciales-----\n");
     printf("Cedula jurídica: %d\nNombre: %s\nTeléfono: %d\nNumero de la siguiente factura: %d\n\n\n",valoresIniciales.cedulaJuridica, valoresIniciales.nombreComercio, 
                         valoresIniciales.telefono, valoresIniciales.numeroSecSigFact);
     do{
-        
         printf("\n#####  Menú administrativo  #####\n\n");
         printf("1.Registro de nomina \n");
         printf("2.Registro ventas. \n");
-        printf("3.Consulta de nomina.\n");//////////////////////
+        printf("3.Consulta de nomina.\n");
         printf("4.Consulta de ventas.\n");
         printf("5.Consulta Balance anual\n");
         printf("6.Volver al menú principal.\n");
@@ -198,12 +229,17 @@ void  menuAdministrativo(){
             break;
         }
     }while(repetir);
-    
-    
-
     return;
 }
 
+
+/*****************************
+ * Nombre:cargarValoresIniciales
+ * E:arreglo enviado por el servidor con los valores iniciales
+ * S:almacén del struct con los valores iniciales
+ * R:tener conexión al servidor, debe existir el elemento en la base de datos
+ * O:solicita el arreglo de valores iniciales a la base de datos y genera un struct
+ * ***************************/
 struct ValoresIniciales cargarValoresIniciales(){
     getValoresIniciales();
     row = mysql_fetch_row(res);
@@ -211,17 +247,24 @@ struct ValoresIniciales cargarValoresIniciales(){
     struct ValoresIniciales pValoresIniciales = {atoi(row[0]),row[1],atoi(row[2]),atoi(row[3]),atof(row[4])};
     return pValoresIniciales;
 }
-//////////////////////////////////
-void leerArchivo(){
 
+
+/*****************************
+ * Nombre:leerArchivo
+ * E:ruta del archivo que contiene los productos a cargar
+ * S:llamada a la función transformar archivo
+ * R:El archivo debe existir en la ruta indicada 
+ * O:Solicita un archivo txt y lo carga al programa
+ * ***************************/
+void leerArchivo(){
     FILE *archivo;
     int tamanio;
     int cantidadLineas = 0;
     char ultimoCaracter;
     char ruta[200];
     printf("\nPorfavor indique la ruta del archivo:");
-    //scanf("%s",ruta);
-    archivo = fopen(/*ruta*/ "test.txt", "r+");
+    scanf("%s",ruta);
+    archivo = fopen(ruta, "r+");
     while((getchar()!='\n'));
     if(archivo == NULL){
         printf("\n\nLa ruta indicada no existe o no está disponible.\n");
@@ -245,6 +288,14 @@ void leerArchivo(){
     return;    
 }
 
+
+/*****************************
+ * Nombre:
+ * E:archivo con los productos a insertar
+ * S:registro de los productos a base de datos
+ * R:poseer conexión al servidor y formato correcto del archivo
+ * O:recibe un archivo, lo divide por ",", registra las entradas en la base de datos
+ * ***************************/
 void transformarArchivo(FILE *archivo){
     char lineas[RSIZ][LSIZ];
     int i = 0;
@@ -255,45 +306,46 @@ void transformarArchivo(FILE *archivo){
         i++;
     }
     j = i;
+    system("clear");
     printf("\nSe incluiran los siguientes productos\n");
     struct Producto Productos[i];
     for(i = 0; i<j; ++i){
         char *str = lineas[i];
-        printf("%s\n",str);
-        char *idProducto = strtok(str,",");
+        //printf("%s\n",str);
+        char *idProducto = strtok(str,",");//dividiendo por comas
         char *nombre = strtok(NULL,",");
         char *costo = strtok(NULL,",");
         char *impAplicado = strtok(NULL,",");
-        printf("id:%s\n",idProducto);
-        printf("nombre:%s\n",nombre);
-        printf("costo:%s\n",costo);
-        printf("impAplicado:%s\n",impAplicado);
 
         if(idProducto != NULL &&
-            esNumero(costo) && esNumero(impAplicado)){
+            esNumero(costo) && esNumero(impAplicado)){//generar struct
             struct Producto pProducto;
             pProducto.idProducto = idProducto;
             pProducto.nombre = nombre;
             pProducto.costo = atof(costo);
             pProducto.impAplicado = atof(impAplicado);
-            printf("idProducto:%s\tnombre:%s\tcosto:%f\timpuesto Aplicado:%f\n\n", 
+            printf("Id Producto: %s\tNombre: %s\tCosto unitario: %f\timpuesto Aplicado: %f\n\n", 
                         pProducto.idProducto,pProducto.nombre, pProducto.costo, pProducto.impAplicado);
             insertProducto(&pProducto);
         } 
     }
     printf("------------------------------------\n");
     pausa();
-
     return;
-
 }
 
+
+/*****************************
+ * Nombre: listarAreas
+ * E:puntero a variable donde se almacena la cantidad de areas
+ * S:cantidad de areas mediante puntero y arreglo con las areas registradas
+ * R:conexión a la base de datos
+ * O:Solicita la lista de areas al servido y  retorna un arreglo con ellas además de su cantidad
+ * ***************************/
 struct Area* listarAreas(int *cantidadAreas){
     system("clear");
     getAllAreas();
-    printf("##### Areas #####");
-    //int cantidadAreas = (int)mysql_num_rows(res);
-    //printf("\n\tId Area\t\tNombre\t\tDimensión\t\tProducto principal producido\n");
+    printf("\n##### Areas #####\n");
     int i=0;
     *cantidadAreas = (int)mysql_num_rows(res);
     struct Area *lAreas = malloc(sizeof(struct Area)*(int)mysql_num_rows(res));
@@ -302,16 +354,23 @@ struct Area* listarAreas(int *cantidadAreas){
         lAreas[i].nombre = row[1];
         lAreas[i].dimension = atof(row[2]);
         lAreas[i].productoPrincipal = row[3];
-        printf("%d.\t%s\t\t%s\t\t%s\t\t\t%s\t\n",i,row[0], row[1],row[2], row[3]);
+        printf("[%d].\t%s\t\t%s\t\t%s\t\t\t%s\t\n",i,row[0], row[1],row[2], row[3]);
         i++;
     }
-    //imprimirAreas(lAreas, cantidadAreas);
     freeMysql();
 
     return lAreas;
 }
 
 
+
+/*****************************
+ * Nombre: listarEmpleados
+ * E:ninguna
+ * S:arreglo con los empleados registrados en base de datos
+ * R:conexión a la base de datos
+ * O:Solicita la lista de empleados a la base de datos
+ * ***************************/
 struct Empleado* listarEmpleados(){
     system("clear");
     getAllEmpleados();
@@ -335,6 +394,14 @@ struct Empleado* listarEmpleados(){
     return lEmpleados;
 }
 
+
+/*****************************
+ * Nombre: generarNomina
+ * E: entrada del usuario mediate inputs
+ * S: Struct nomina 
+ * R: Conexión a base de datos y valores validos
+ * O:
+ * ***************************/
 void generarNomina(){
     struct Nomina nomina ;
 
@@ -353,7 +420,7 @@ void generarNomina(){
     }
 
     int cantidadNomina = 0;
-    nomina.empleados = agregarEmpleados(&cantidadNomina);
+    nomina.empleados = agregarEmpleados(&cantidadNomina);// agrega empleados a la nomina
     
     //imprimir detalle nomina
     system("clear");
@@ -376,6 +443,8 @@ void generarNomina(){
 
     getchar();
     char opcion;
+
+    //guardar nomina en base de datos
     printf("\n\n¿Desea guardar esta nomina ? (y/n): ");
     scanf(" %c", &opcion);
     if(opcion == 'y' || opcion == 'Y'){
@@ -396,6 +465,14 @@ void generarNomina(){
 
 }
 
+
+/*****************************
+ * Nombre: agregarEmpleados
+ * E:puntero donde se almacenara la cantidad de empleados que se agruegue
+ * S:arreglo con los empleados que formaran parte de la nomina
+ * R: conexión a base de datos y una nomina preexistente
+ * O:muestra al usuario los empleados registrados y le permite agregarlos a la nomina para luego guardarla
+ * ***************************/
 struct Empleado* agregarEmpleados(int *pCantidadNomina){
     struct Empleado *lEmpleados = listarEmpleados();
     struct Empleado *empleadosNomina = NULL;
@@ -404,7 +481,7 @@ struct Empleado* agregarEmpleados(int *pCantidadNomina){
     printf("\nIngrese el id del empleado u otro caracter para terminar la selección\nOpción: ");
     while (scanf("%d", &num)==1){
         if(num < cantEmpleados){
-            if(!enNomina(lEmpleados[num].cedula,empleadosNomina,j) ){
+            if(!enNomina(lEmpleados[num].cedula,empleadosNomina,j) ){//verificar que no haya sigo agregado
                 empleadosNomina = realloc(empleadosNomina, sizeof(struct Empleado)*++j);
                 empleadosNomina[j-1] = lEmpleados[num];
                 system("clear");
@@ -424,13 +501,19 @@ struct Empleado* agregarEmpleados(int *pCantidadNomina){
 }
 
 
-bool enNomina(int cedula, struct Empleado *nomina, int j){
+
+/*****************************
+ * Nombre:enNomina
+ * E:cedula de un empleado, nomina en construcción, cantidad de empleados en nomina
+ * S:true si el empleado ya está en la nomina, false si no 
+ * R:ninguna
+ * O:verifica si un empleado ya fue agreagado a la nomina
+ * ***************************/
+bool enNomina(int cedula, struct Empleado *nomina, int cantidad){
     int i = 0;
-    while (i<j)
+    while (i<cantidad)
     {
-        //printf("\n%d", nomina[i].cedula);
         if(cedula == nomina[i].cedula){
-            //printf("ya existe");
             return true;
         }
         i++;
@@ -438,6 +521,14 @@ bool enNomina(int cedula, struct Empleado *nomina, int j){
     return false;
 }
 
+
+/*****************************
+ * Nombre: generarFactura
+ * E:entrada del usuario (información de la factura)
+ * S:almacen de factura y sus productos en base de datos
+ * R:conexión a la base de datos 
+ * O:selecciona una lista de productos en información para generar una orden de compra
+ * ***************************/
 void generarFactura(){
     //obtener y mostrar productos
     struct Factura pFactura;
@@ -532,6 +623,15 @@ void generarFactura(){
 }
 
 
+
+/*****************************
+ * Nombre: menuProductos
+ * E:puntero (bandera) para guardar la factura, puntero que almacenará la cantidad de productos 
+ * que se agreguen a la orden de compra
+ * S:arreglo con los valores agregados a la orden 
+ * R:conexión  a la base de datos, si el producto ya existe aumentar cantidad
+ * O:Despliega una lista de productos y le permite al usuario agregarlos a su carrito o eliminarlos
+ * ***************************/
 struct Producto* menuProductos(int *guardar, int *cantidadProductos){
     int pcantidadProductos = 0;
     struct Producto *lProductos = listarProductos(&pcantidadProductos);
@@ -555,7 +655,6 @@ struct Producto* menuProductos(int *guardar, int *cantidadProductos){
             {
             case '1':  
                 productosFactura =agregarProducto(productosFactura, lProductos, pcantidadProductos, &j);
-                printf("\n\nsali de agregar: %d:\n\n", j);
                 break;
             
             case '2':
@@ -591,13 +690,21 @@ struct Producto* menuProductos(int *guardar, int *cantidadProductos){
 
 }
 
+
+/*****************************
+ * Nombre:AgregarProducto
+ * E:arrelops de productos general y en carrito
+ * S:arreglo de productos con el nuevo producto
+ * R:deben existir productos 
+ * O:Agrega un producto al carrito
+ * ***************************/
 struct Producto* agregarProducto(struct Producto *productosFactura,struct Producto *lProductos, int pcantidadProductos, int *j){
     int num = -1;
     int k = *j;
-    printf("\nIngrese el id del producto u otro caracter para terminar la selección\nOpción: ");
+    printf("\nIngrese el indice del producto u otro caracter para terminar la selección\n[Indice producto]: ");
     while (scanf("%d", &num)==1){
         if(num < pcantidadProductos){
-                productosFactura = realloc(productosFactura, sizeof(struct Producto)*++k);   
+                productosFactura = realloc(productosFactura, sizeof(struct Producto)*++k);  //aumentar tamaño del arreglo 
                 int cantidadProd = 0;
                 printf("\nCantidad: ");
                 scanf("%d", &cantidadProd);
@@ -620,15 +727,23 @@ struct Producto* agregarProducto(struct Producto *productosFactura,struct Produc
                     
                 }   
         }else{
-            printf("\nEste empleado no existe\n\n");
+            printf("\nEste prodcto no existe\n\n");
         }
-        printf("\nIngrese el id del producto u otro caracter para terminar la selección\nOpción: ");
-        
+        printf("\nIngrese el indice del producto u otro caracter para terminar la selección\n[Indice producto]: ");
+    
     }
     *j= k; 
     return productosFactura;
 }
 
+
+/*****************************
+ * Nombre: eliminarProducto
+ * E:producto en factura, cantidad de procusto
+ * S:elimiación del producto
+ * R:el producto debe existir
+ * O:Remueve un producto del arreglo a registrar
+ * ***************************/
 struct Producto* eliminarProducto(struct Producto *productosFactura, int *j){
     printf("\n\n\n eliminar productos");
 
@@ -652,6 +767,15 @@ struct Producto* eliminarProducto(struct Producto *productosFactura, int *j){
     return productosFactura;
 }
 
+
+
+/*****************************
+ * Nombre:listarProductos
+ * E:puntero que almcenara la cantidd de productos
+ * S:cantidad de productos y arreglos con ellos
+ * R:conexión a base de datosdsldsf
+ * O:carga los producto al programa
+ * ***************************/
 struct Producto* listarProductos(int *pCantidadProductos){
     system("clear");
     getAllProductos();
@@ -675,6 +799,15 @@ struct Producto* listarProductos(int *pCantidadProductos){
     return lProductos;
 }
 
+
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 bool enFactura(char *idProducto, struct Producto *factura, int j){
     int i = 0;
     while (i<j)
@@ -691,6 +824,14 @@ bool enFactura(char *idProducto, struct Producto *factura, int j){
 
 
 
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void listarNominas(){
     system("clear");
     getAllNominas();//solicitar nominas a la base de datos
@@ -751,6 +892,14 @@ void listarNominas(){
 }
 
 
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void listarFacturas(){
     system("clear");
     printf("\nlistar ventas");
@@ -798,6 +947,15 @@ void listarFacturas(){
     return;
 }
 
+
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void imprimirDetalleFactura(struct Factura *pFactura){
     system("clear");
     printf("\n##### Detalle de la factura #####"); 
@@ -838,6 +996,13 @@ void imprimirDetalleFactura(struct Factura *pFactura){
 
 
 
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void imprimirAreas(struct Area *lAreas, int cantidad){
     int i = 0;
     printf("\n\tId Area\t\tNombre\t\tDimensión\t\tProducto principal producido\n");;
@@ -850,6 +1015,14 @@ void imprimirAreas(struct Area *lAreas, int cantidad){
 }
 
 
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void imprimirNominas(struct Nomina *lNominas, int cantidad){
     int i = 0;
     printf("'\n##### Nominas #####\n\n\tMes\t\tAño\t\tSubtotal\tTotal\n");
@@ -861,6 +1034,15 @@ void imprimirNominas(struct Nomina *lNominas, int cantidad){
     return;
 }
 
+
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad){
     int i = 0;
     printf("\n\n##### Empleados #####\n\n\tCedula \t\tNombre completo \tLabor \t\tSalario mensual \tSalario cargas sociales \n");
@@ -873,6 +1055,14 @@ void imprimirEmpleados(struct Empleado *lEmpleados, int cantidad){
 }
 
 
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void imprimirFacturas(struct Factura *lFacturas, int cantidad){
     int i = 0;
     printf("##### Facturas #####\n\nNumero\t\tFecha\t\tSubtotal\tTotal\n");
@@ -884,6 +1074,15 @@ void imprimirFacturas(struct Factura *lFacturas, int cantidad){
     return;
 }
 
+
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCant){
     int i = 0;
     printf("\n\n\tId Producto \tNombre \t\tCosto \t\tImpuesto aplicado ");
@@ -903,6 +1102,14 @@ void imprimirProductos(struct Producto *lProductos, int cantidad, int mostrarCan
 }
 
 
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void listarBalances(){
     system("clear");
     getBalanceAnual();
@@ -961,6 +1168,15 @@ void listarBalances(){
     return;
 }
 
+
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void imprimirBalances(struct Balance *lBalances, int cantidad,int imprimirMes){
     int i = 0;
     printf("'\n##### Balance por año #####\n\n");
@@ -984,6 +1200,13 @@ void imprimirBalances(struct Balance *lBalances, int cantidad,int imprimirMes){
 
 
 
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 int getNum(char *mesanio){
     int num;
     while(scanf("%d", &num)!=1){
@@ -997,6 +1220,13 @@ int getNum(char *mesanio){
 /*******************************************************************/
 
 
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 bool esNumero(char *token){
     bool res = true;
     printf(" atoi:\t %d",atoi(token));
@@ -1007,6 +1237,17 @@ bool esNumero(char *token){
     }
     return false;
 }
+
+
+
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void pausa(){
     getchar();
     printf("\n\nPresione enter para continuar....");
@@ -1014,6 +1255,17 @@ void pausa(){
     system("clear");
     return;
 }
+
+
+
+
+/*****************************
+ * Nombre:
+ * E:
+ * S:
+ * R:
+ * O:
+ * ***************************/
 void salir(){
     exit(0);
 }

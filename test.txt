@@ -1,7 +1,7 @@
-D1,Papaya,500,1.5
-D2,manzana,100,2.0
+D1,Papaya,550,1.5
+D2,Manzana,100,0.5
 F3,Culantro,300,1.0
-G4,Paquete de Arroz,1250,3.2
-h4, prueba, 12.5, 2
-h5, prueba4, 15.5, 2
-u5, fallo, a , 3
+G4,Bolsa de Arroz,1250,2.1
+H4,Bolsa de frijoles,1125,1.9
+H5,Coca cola,750.50,1.2
+U5,Pepsi,600,1.1
