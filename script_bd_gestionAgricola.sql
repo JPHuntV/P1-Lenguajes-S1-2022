@@ -86,6 +86,7 @@ create table ProductoXFactura(
     foreign key (idProducto) references Productos(idProducto),
     foreign key (numeroFactura) references Factura(numeroFactura)
 );
+
 DROP procedure IF EXISTS `insertProducto`;
 
 DELIMITER $$
@@ -159,6 +160,10 @@ BEGIN
 	insert into Factura(nombreLocal, cedulaJuridica, telefono, fecha,cliente, subtotal, impuestoVenta, total)
 		values(pNombreLocal, pCedulaJuridica, pTelefono, pFecha,pCliente, pSubtotal, pImpuestoVenta, pTotal);
 	select LAST_INSERT_ID();
+    
+    update ValoresIniciales
+    set numeroSecSigFact = LAST_INSERT_ID()+1
+    where cedulaJuridica = pCedulaJuridica;
 END$$
 
 DELIMITER ;
@@ -174,6 +179,19 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+DROP procedure IF EXISTS `getAllFacturas`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `getAllFacturas` ()
+BEGIN
+		select * from Factura;
+END$$
+
+DELIMITER ;
+
 
 DROP procedure IF EXISTS `getAllAreas`;
 
@@ -220,6 +238,8 @@ END$$
 
 DELIMITER ;
 
+
+
 DROP procedure IF EXISTS `getAllNominas`;
 
 DELIMITER $$
@@ -244,6 +264,18 @@ END$$
 DELIMITER ;
 
 
+DROP procedure IF EXISTS `getProductosByFactura`;
+
+DELIMITER $$
+USE `gestionAgricola`$$
+CREATE PROCEDURE `getProductosByFactura` (in pIdFactura int)
+BEGIN
+		select * from Productos p
+        inner join ProductoXFactura pf on p.idProducto = pf.idProducto
+        where numeroFactura = pIdFactura ;
+END$$
+
+DELIMITER ;
 
 DROP procedure IF EXISTS `getEmpleadosByNomina`;
 
@@ -266,8 +298,8 @@ DELIMITER $$
 USE `gestionAgricola`$$
 CREATE PROCEDURE `getBalanceAnual` ()
 BEGIN
-		select nominas.anio, totalNominaCarga, subtotalFacturas,IVFactura, 
-        (totalNominaCarga + subtotalFacturas) balance 
+		select nominas.anio, ifnull(totalNominaCarga,0), ifnull(subtotalFacturas,0), ifnull(IVFactura,0), 
+        ifnull((totalNominaCarga + subtotalFacturas),0) balance 
         from(
 			select sum(total) totalNominaCarga, anio from Nominas
 			group by anio
@@ -289,8 +321,8 @@ DELIMITER $$
 USE `gestionAgricola`$$
 CREATE PROCEDURE `getBalanceMensual` (in pAnio int)
 BEGIN
-		select mes, anio, sum(totalNominaCarga), sum(subtotalFacturas),sum(IVFactura), 
-        sum(totalNominaCarga + subtotalFacturas) balance 
+		select mes, anio, ifnull(sum(totalNominaCarga),0), ifnull(sum(subtotalFacturas),0),ifnull(sum(IVFactura),0), 
+        ifnull(sum(totalNominaCarga + subtotalFacturas),0) balance 
         from(
 			select mes,anio , sum(total) totalNominaCarga, 0 subtotalFacturas,0 IVFactura
             from Nominas
@@ -308,39 +340,40 @@ END$$
 
 DELIMITER ;
 
-call getBalanceAnual()
 
 
 
 /************DDL
 insert into Usuarios(usuario, clave)
-values('Usuarioej1', 'contraseñaEj1'),
-	('usuarioEj2','contraseñaEj2')
+values('jphuntv', 'jp1234'),
+	('usrxd','clave05');
 
 
 insert into ValoresIniciales(cedulaJuridica, nombreComercio, telefono, numeroSecSigFact, porcentajeCargaSocial)
-values(356485698, 'Comercio de ejemplo 01', 85645587, 0,1.5);
+values(356485698, 'Agrosa', 85645587, 2,1.5);
 
-call insertArea('Area1', 153.000, 'productoA1');
-call insertArea('Area2', 15.000, 'productoA2');
-call insertArea('Area3', 26.40, 'productoA3');
-call insertArea('Area4', 150.000, 'productoA4');
-call insertArea('Area5', 895.450, 'productoA5');
-call insertArea('Area6', 100.000, 'productoA6');
-call insertArea('Area7', 185.000, 'productoA7');
-call insertArea('Area8', 14.000, 'productoA8');
-call insertArea('Area9', 1654.450, 'productoA9');
-call insertArea('Area10', 415.000, 'productoA10');
+call insertArea('Alpha', 220.45, 'Papa');
+call insertArea('Bravo', 150.95, 'Platano');
+call insertArea('Charlie', 426.40, 'Yuca');
+call insertArea('Delta', 150.000, 'Mango');
+call insertArea('Echo', 895.450, 'Banano');
+call insertArea('Foxtrot', 100.50, 'Camote');
+call insertArea('Golf', 185.000, 'Fresas');
+call insertArea('Hotel', 144.564, 'Huevos');
+call insertArea('India', 154.450, 'Carne');
+call insertArea('Juliett', 415.000, 'Caña');
 
-call insertEmpleado(701234568, 'martin', 'app1','app22', 'secretario', 256.55);
-call insertEmpleado(709874567, 'jose', 'app2','app23', 'carpintero', 256.55);
-call insertEmpleado(701245879, 'maria', 'app13','app24', 'profesor', 256.55);
-call insertEmpleado(621584479, 'pedro', 'app4','app25', 'director', 215.55);
-call insertEmpleado(502154875, 'juan', 'app5','app26', 'secretario', 56.55);
-call insertEmpleado(705223698, 'carlos', 'app6','app247', 'ingeniero', 6556.55);
-call insertEmpleado(452125589, 'pepe', 'app7','app28', 'profesor', 856.55);
-call insertEmpleado(965458565, 'sofia', 'app8','app29', 'secretario', 456.55);
-call insertEmpleado(702800054, 'adrian', 'app9','app210', 'secretario', 966.55);*/
+call insertEmpleado(701234568, 'Conrado', 'Arias','Pallarés', 'Ingeniero', 400.000);
+call insertEmpleado(709874567, 'Jose', 'Peña','Armengol', 'Carpintero', 325.652);
+call insertEmpleado(201245879, 'Salomé', 'Tomas','Díaz', 'Ingeniero', 400.000);
+call insertEmpleado(621584479, 'Ingrid', 'Esparza','Bosch', 'Jardinero', 356.214);
+call insertEmpleado(502154875, 'Román', 'Alcázar','Hidalgo', 'Jardinero', 356.214);
+call insertEmpleado(705223698, 'Carlos', 'Cruz','Cruz', 'Carpintero', 325.652);
+call insertEmpleado(452125589, 'Asdrubal', 'Nevado','Losada', 'Chofer', 320.321);
+call insertEmpleado(965458565, 'René', 'Arjona','Ramirez', 'Carpintero', 325.652);
+call insertEmpleado(702800054, 'Adrian', 'Antpon','Marques', 'Chofer', 320.321);
+
+*/
 
 
 
