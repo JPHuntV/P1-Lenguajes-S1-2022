@@ -1,0 +1,7 @@
+Nombre del curso: Lenguajes de programación
+Número de semestre y año lectivo: 2 semestre 2022
+Nombre de los Estudiantes: Jean Hunt Valerio
+Número de carnet de los estudiantes: 2018265223
+Número de proyecto programado: #1
+Fecha de entrega: 29/08/2022
+Estatus de la entrega (debe ser CONGRUENTE con la solución entregada): [Excelente/Superior]
